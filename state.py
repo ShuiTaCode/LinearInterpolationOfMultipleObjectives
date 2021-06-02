@@ -6,6 +6,7 @@ class State:
         self.end = False
         self.penalty = False
         self.value = {'a':'up','r':0}
+        self.add_values=[]
 
     def get_x(self):
         return self.x
@@ -30,6 +31,10 @@ class State:
 
     def set_value(self, value):
         self.value = {'a': value['a'],'r':round(value['r'], 6)}
+    def set_add_values(self,add_values):
+        self.add_values=add_values
+    def get_add_values(self):
+        return self.add_values
 
     def set_penalty(self, penalty):
         self.penalty = penalty

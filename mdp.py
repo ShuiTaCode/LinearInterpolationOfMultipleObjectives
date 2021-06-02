@@ -146,12 +146,15 @@ class Mdp:
         return result
 
     def solve_mdp(self):
-        while len([s for s in self.init_set_of_states if (s.get_value()['r'] > 0)]) < self.size * self.size - 1:
+        while len([s for s in self.init_set_of_states if (s.get_value()['r'] > 0)]) < self.size * self.size:  # - 1:
             self.run_iteration()
         arr = []
         return self.init_set_of_states
 
     def return_max_val(self, arr):
+        print('max_val arr')
+        for ele in arr:
+            print(ele['s'].__dict__,ele['a'],ele['r'])
         output = arr[0]
         for obj in arr:
             if obj['r'] > output['r']:
@@ -174,14 +177,17 @@ class Mdp:
         if action == 'exit':  # wenn policy im entzustand nehme einfach erste lösung
             return arr[0]
 
-        print('das sind nun all tr einer action',[obj for obj in arr if
-                                    (obj['a'] == action)])
+        print('das sind nun all tr einer action', [obj for obj in arr if
+                                                   (obj['a'] == action)])
         return self.return_max_val([obj for obj in arr if
                                     (obj['a'] == action)])
 
         # print('es ist ein fehler aufgetreten das wurde nicht gefunden: ',action)
 
-    def run_transformation(self):
+    def set_states(self, set_of_states):
+        self.init_set_of_states = set_of_states
+
+    def run_safe_iteration(self):
         print('transformation wird ausgeführt')
         result = []
         for state in self.init_set_of_states:
@@ -202,6 +208,40 @@ class Mdp:
             # print('jojojo',result[x]['s'].__dict__,result[x])
             self.init_set_of_states[x].set_value(result[x])
 
+    def eval_policy(self):
+        result = []
+        for state in self.init_set_of_states:
+            arr = []
+            for tr in [t for t in self.init_set_of_transitions_probabilities_and_rewards if
+                       (t.get_state() == state)]:
+                arr.append({
+                    's': tr.get_state(),
+                    'a': tr.get_action(),
+                    'r': tr.get_prob() * tr.get_succ_state().get_value()['r']
+                })
+            max_val = self.return_max_val(arr)
+
+            all_max_val = [v for v in arr if (v['r'] == max_val['r'])]  # nur zwecks visualisierung
+            state.set_add_values(all_max_val)  #
+
+            result.append(
+                max_val)  # nicht den max(array) sondern den für die aktion a. a ist die optimale in Q' ist =>
+            # TODO arr-werte mir dazugehörigen aktionen verknüpfuen sodass man nach der optimalen Aktion von Q' filtern kann
+
+        for x in range(len(self.init_set_of_states)):
+             self.init_set_of_states[x].set_value(
+                 {
+
+                     'a': result[x]['a'],
+                     'r':  self.init_set_of_states[x].get_value()['r']
+                 }
+                 )
+             print('neue policy',{
+
+                     'a': result[x]['a'],
+                     'r':  self.init_set_of_states[x].get_value()['r']
+                 })
+
     def run_iteration(self):
         print('iteration wird ausgeführt')
         result = []
@@ -214,6 +254,10 @@ class Mdp:
                     'a': tr.get_action(),
                     'r': tr.get_prob() * (tr.get_reward() + self.gamma * tr.get_succ_state().get_value()['r'])
                 })
+            max_val = self.return_max_val(arr)
+
+            all_max_val = [v for v in arr if (v['r'] == max_val['r'])]  # nur zwecks visualisierung
+            state.set_add_values(all_max_val)  #
 
             result.append(
                 self.return_max_val(
@@ -232,17 +276,17 @@ class Mdp:
         self.policy = policy
         self.init_set_of_states = self.create_set_of_states()
         # initial_distribution_of_states = create_random_initial_state_distribution(init_set_of_states)
-        self.initial_state = random.choice(self.init_set_of_states)
-        self.initial_state.set_start(True)
-        self.end_state = random.choice([state for state in self.init_set_of_states if
-                                        (state != self.initial_state)])
+        # self.initial_state = random.choice(self.init_set_of_states)
+        # self.initial_state.set_start(True)
+        self.end_state = random.choice([state for state in self.init_set_of_states])
         self.end_state.set_end(True)
 
         # end_state.set_value(1)
         # print(initial_state)
         self.init_set_of_actions = ['up', 'down', 'left', 'right']
-        self.init_set_of_transitions = [tr for tr in self.create_set_of_transitions() if
-                                        (tr.get_state() != self.end_state)]
-        self.init_set_of_transitions.append(Transition(self.end_state, 'exit', State(9, 9)))
+        # self.init_set_of_transitions = [tr for tr in self.create_set_of_transitions() if
+        #                                (tr.get_state() != self.end_state)]
+        # self.init_set_of_transitions.append(Transition(self.end_state, 'exit', State(9, 9)))
+        self.init_set_of_transitions = self.create_set_of_transitions()
         self.init_set_of_transitions_probabilities = self.create_transition_probability()
         self.init_set_of_transitions_probabilities_and_rewards = self.create_transition_reward()
