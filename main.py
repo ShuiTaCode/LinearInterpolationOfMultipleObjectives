@@ -23,12 +23,12 @@ scale_mdp_3 = space / size
 
 gamma = 1
 mdp1 = Mdp(size, gamma, [])
-policy1 = mdp1.solve_mdp()
+#policy1 = mdp1.solve_mdp()
 mdp2 = Mdp(size, gamma, [])
-policy2 = mdp2.solve_mdp()
+#policy2 = mdp2.solve_mdp()
 
-
-
+coef_mdp_left=0
+coef_mdp_right=0
 
 
 def draw_square(c, x, y, w, h, color):
@@ -64,6 +64,18 @@ def draw_rectangle(c, x, y, w, h, action, reward, color):
             c.create_line(x + 0.5 * w, y, x, y + 0.5 * h, fill=color, width=3)
             c.create_line(x, y + 0.5 * h, x, y, fill=color, width=3)
             return
+
+
+def callback_coef_mdp_left(P):
+    if (P.isdigit() and int(P) <= 100) or P == "":
+
+        return True
+    else:
+
+        return False
+
+
+
 
 
 def draw_graph(c, x, y, scale, set_of_states):
@@ -108,11 +120,16 @@ def run_iteration(c):
 
     mdp1.run_iteration()
     mdp2.run_iteration()
+    mdp3.set_states(calc_lin_combination(mdp1.get_states(), mdp2.get_states(), mdp3.get_states(), int(v1.get()) / 100,
+                                         int(v2.get()) / 100))
     c.delete('all')
-    draw_policy(c, xmdp1, 100, scale * 0.7, mdp1.get_states())
-    draw_policy(c, canvas_width - size * scale * 0.7, 100, scale * 0.7, mdp2.get_states())
-    draw_graph(c, xmdp1, 100, scale * 0.7, mdp1.get_states())
-    draw_graph(c, canvas_width - size * scale * 0.7, 100, scale * 0.7, mdp2.get_states())
+    draw_policy(c, xmdp1, 0, scale * 0.7, mdp1.get_states())
+    draw_policy(c, xmdp2, 0, scale * 0.7, mdp2.get_states())
+    draw_policy(c, xmdp3, 0, scale_mdp_3, mdp3.get_states())
+    draw_graph(c, xmdp1, 0, scale * 0.7, mdp1.get_states())
+    draw_graph(c, xmdp2, 0, scale * 0.7, mdp2.get_states())
+    draw_graph(c, xmdp3, 0, scale_mdp_3, mdp3.get_states())
+
 
 
 def run_safe_iteration(c):
@@ -124,7 +141,6 @@ def run_safe_iteration(c):
     draw_graph(c, canvas_width - size * scale * 0.7, 100, scale * 0.7, mdp2.get_states())
 
 
-
 def calc_lin_combination(mdp1_states, mdp2_states, mdp3_states, coef_mdp1, coef_mdp2):
     new_states = []
 
@@ -133,55 +149,119 @@ def calc_lin_combination(mdp1_states, mdp2_states, mdp3_states, coef_mdp1, coef_
         new_value = {'a': new_state.get_value()['a'],
                      'r': mdp1_states[i].get_value()['r'] * coef_mdp1 + mdp2_states[i].get_value()['r'] * coef_mdp2}
         new_state.set_value(new_value)
-        print('new value',new_value['r'],mdp1_states[i].get_value()['r'],mdp2_states[i].get_value()['r'])
-        if(mdp1_states[i].get_end() or mdp2_states[i].get_end()):
+        print('new value', new_value['r'], mdp1_states[i].get_value()['r'], mdp2_states[i].get_value()['r'])
+        if (mdp1_states[i].get_end() or mdp2_states[i].get_end()):
             new_state.set_end(True)
         else:
             new_state.set_end(False)
         new_states.append(new_state)
 
-
     mdp3.set_states(new_states)
     mdp3.eval_policy()
-    #mdp3.run_iteration()
+    # mdp3.run_iteration()
 
     return mdp3.get_states()
 
+def solve_mds(c):
+    mdp1.solve_mdp()
+    mdp2.solve_mdp()
+    c.delete('all')
+    draw_policy(c, xmdp1, 0, scale * 0.7, mdp1.get_states())
+    draw_policy(c, xmdp2, 0, scale * 0.7, mdp2.get_states())
+    draw_policy(c, xmdp3, 0, scale_mdp_3, mdp3.get_states())
+    draw_graph(c, xmdp1, 0, scale * 0.7, mdp1.get_states())
+    draw_graph(c, xmdp2, 0, scale * 0.7, mdp2.get_states())
+    draw_graph(c, xmdp3, 0, scale_mdp_3, mdp3.get_states())
+
+
 def run_multi_safe_alg(c):
-    mdp3.set_states(calc_lin_combination(mdp1.get_states(),mdp2.get_states(),mdp3.get_states(),0.5,0.5))
-    #mdp3.run_iteration()
+    mdp1.solve_mdp()
+    mdp2.solve_mdp()
+    mdp3.set_states(calc_lin_combination(mdp1.get_states(), mdp2.get_states(), mdp3.get_states(), int(v1.get())/100, int(v2.get())/100))
+    # mdp3.run_iteration()
     mdp3.eval_policy()
     c.delete('all')
     print('mdp3 states')
     for state in mdp3.get_states():
         print(state.__dict__)
-    draw_policy(c, xmdp1, 100, scale * 0.7, mdp1.get_states())
-    draw_policy(c, xmdp2, 100, scale * 0.7, mdp2.get_states())
-    draw_policy(c, xmdp3, 100, scale_mdp_3 , mdp3.get_states())
-    draw_graph(c, xmdp1, 100, scale * 0.7, mdp1.get_states())
-    draw_graph(c, xmdp2, 100, scale * 0.7, mdp2.get_states())
-    draw_graph(c, xmdp3, 100, scale_mdp_3, mdp3.get_states())
+
+    draw_policy(c, xmdp1, 0, scale * 0.7, mdp1.get_states())
+    draw_policy(c, xmdp2, 0, scale * 0.7, mdp2.get_states())
+    draw_policy(c, xmdp3, 0, scale_mdp_3, mdp3.get_states())
+    draw_graph(c, xmdp1, 0, scale * 0.7, mdp1.get_states())
+    draw_graph(c, xmdp2, 0, scale * 0.7, mdp2.get_states())
+    draw_graph(c, xmdp3, 0, scale_mdp_3, mdp3.get_states())
+
 
 mdp3 = Mdp(size, gamma, [])
-mdp3.set_states(calc_lin_combination(mdp1.get_states(),mdp2.get_states(),mdp3.get_states(),0.5,0.5))
-# Press the green button in the gutter to run the script.
+#mdp3.set_states(calc_lin_combination(mdp1.get_states(), mdp2.get_states(), mdp3.get_states(), 0.5, 0.5))
+
+def callback_left(*args):
+    coef1 = int(v1.get())
+    v2.set(str(100-coef1))
+    print('callback',coef1)
+
+def callback_right(*args):
+    coef1 = int(v2.get())
+    v1.set(str(100 - coef1))
+    print('callback',coef1)
 if __name__ == '__main__':
     top = Tk()
-    top.geometry("1260x960")
+    # top.geometry("1260x960")
     # creating a simple canvas
-    c = Canvas(top, bg="white", height="960", width="1460")
-    b1 = Button(top, text="Increment Iteration",
+
+    # self.root = root
+    # self.entry = tk.Entry(root)
+    stvar = StringVar()
+    stvar.set("one")
+
+    c = Canvas(top, width=canvas_width, height=1000, background='white')
+    c.grid(row=1, column=0)
+
+    frame = Frame(top)
+    frame.grid(row=0, column=0, sticky="n")
+
+    # option = OptionMenu(frame, stvar, "one", "two", "three")
+    label1 = Label(frame, text="coefficient").grid(row=0, column=1, sticky="nw")
+    label2 = Label(frame, text="alpha (Mdp left)").grid(row=1, column=0, sticky="w")
+    label3 = Label(frame, text="beta (Mdp right)").grid(row=2, column=0, sticky="w")
+    # option.grid(row=0, column=1, sticky="nwe")
+    # entry = Entry(frame).grid(row=1, column=1, sticky=E + W)
+    validation = (frame.register(callback_coef_mdp_left))
+    #vright = (frame.register(callback_coef_mdp_left))
+    v1 = StringVar(frame, value='0')
+    v2 = StringVar(frame, value='0')
+    v1.trace('w', callback_left)
+    v2.trace('w', callback_right)
+    e1 = Entry(frame, validate='all', textvariable=v1, validatecommand=(validation, '%P')).grid(row=1, column=1, sticky=E + W)
+
+    e2 = Entry(frame, validate='all', textvariable=v2, validatecommand=(validation, '%P')).grid(row=2, column=1, sticky=E)
+
+    #coef_mdp_left=e1.get()
+    #coef_mdp_right=e2.get()
+    # Button1 = Button(frame, text="Draw").grid(row=3, column=1, sticky="we")
+    # figure1 = c.create_rectangle(80, 80, 120, 120, fill="blue")
+
+    b1 = Button(frame, text="Solve Mdps",
+                command=lambda: solve_mds(c),
+                activeforeground="red", activebackground="pink", pady=10).grid(row=3, column=0, sticky="we")
+    b1 = Button(frame, text="Linear Combination",
                 command=lambda: run_multi_safe_alg(c),
-                activeforeground="red", activebackground="pink", pady=10)
+                activeforeground="red", activebackground="pink", pady=10).grid(row=3, column=1, sticky="we")
+    b2 = Button(frame, text="Increment Iteration",
+                command=lambda: run_iteration(c),
+                activeforeground="red", activebackground="pink", pady=10).grid(row=3, column=2, sticky="we")
 
-    b1.pack(side=TOP)
-    draw_policy(c, xmdp1, 100, scale * 0.7, mdp1.get_states())
-    draw_policy(c, xmdp2, 100, scale * 0.7, mdp2.get_states())
-    draw_graph(c, xmdp1, 100, scale * 0.7, mdp1.get_states())
-    draw_graph(c, xmdp2, 100, scale * 0.7, mdp2.get_states())
-    draw_graph(c, xmdp3, 100, scale_mdp_3, mdp3.get_states())
+    #    b1.pack(side=TOP)
+    draw_policy(c, xmdp1, 0, scale * 0.7, mdp1.get_states())
+    draw_policy(c, xmdp2, 0, scale * 0.7, mdp2.get_states())
+    draw_graph(c, xmdp1, 0, scale * 0.7, mdp1.get_states())
+    draw_graph(c, xmdp2, 0, scale * 0.7, mdp2.get_states())
+    draw_graph(c, xmdp3, 0, scale_mdp_3, mdp3.get_states())
 
-    c.pack()
+    #    c.pack()
     top.mainloop()
+
+
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
