@@ -249,7 +249,8 @@ def test_reward():
     print('final reward mdp2 for alpha ' + str(int(v1.get()) / 100),reward_mdp2)
 
 def accu_reward():
-
+    mdp1_data=[]
+    mdp2_data=[]
 
     for x in range(0,100,10):
         run_multi_safe_alg(c,x)
@@ -267,31 +268,31 @@ def accu_reward():
             for state_mdp2 in mdp2.get_states():
                 if state_mdp2.get_x()==state.get_x() and state_mdp2.get_y()==state.get_y():
                     reward_mdp2 += state_mdp2.get_value()['r']
-
+        mdp1_data.append(reward_mdp1)
+        mdp2_data.append(reward_mdp2)
         print('final reward mdp1 for alpha ' + str(x),reward_mdp1)
         print('final reward mdp2 for alpha ' + str(x),reward_mdp2)
+    plot_graph(mdp1_data,mdp2_data)
 
 
-def plot_graph(c,plot,x,y,w,h):
-    draw_square(c, x ,y , w, h, 'black')
-    plot_x = plot['x']
-    plot_y = plot['y']
-    dx = round(w/len(plot['x']),1)
-    for i in range(len(plot['x'])):
-        c.create_oval(x + w*plot_x[i], y + plot_y[i] ,x + w*plot_x[i]+2,y + plot_y[i] + 2, fill='black', outline='black')
+def plot_graph(mdp1_data,mdp2_data):
+    x = [0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
+    print('size',len(mdp1_data),len(mdp2_data),len(x))
+    fig = plt.figure()
+    ax1 = fig.add_subplot(111)
+
+    ax1.scatter(x, mdp1_data, s=10, c='b', marker="s", label='first')
+    ax1.scatter(x, mdp2_data, s=10, c='r', marker="o", label='second')
+    plt.legend(loc='upper right')
+    plt.show()
 
 
 
 # mdp3.set_states(calc_lin_combination(mdp1.get_states(), mdp2.get_states(), mdp3.get_states(), 0.5, 0.5))
 
-def callback_left(*args):
-    coef1 = int(v1.get())
-    v2.set(str(100 - coef1))
 
 
-def callback_right(*args):
-    coef1 = int(v2.get())
-    v1.set(str(100 - coef1))
+
 
 
 if __name__ == '__main__':
@@ -318,14 +319,13 @@ if __name__ == '__main__':
     # entry = Entry(frame).grid(row=1, column=1, sticky=E + W)
     validation = (frame.register(validate_input))
     v1 = StringVar(frame, value='0')
-    v2 = StringVar(frame, value='0')
-    v1.trace('w', callback_left)
-    v2.trace('w', callback_right)
+
+
+
     e1 = Entry(frame, validate='all', textvariable=v1, validatecommand=(validation, '%P')).grid(row=1, column=1,
                                                                                                 sticky=E + W)
 
-    e2 = Entry(frame, validate='all', textvariable=v2, validatecommand=(validation, '%P')).grid(row=2, column=1,
-                                                                                                sticky=E)
+
 
     # coef_mdp_left=e1.get()
     # coef_mdp_right=e2.get()
@@ -353,47 +353,12 @@ if __name__ == '__main__':
     # draw_graph(c, xmdp3, 0, scale_mdp_3, mdp3.get_states())
 
     #    c.pack()
-    data1 = {'Country': ['US', 'CA', 'GER', 'UK', 'FR'],
-             'GDP_Per_Capita': [45000, 42000, 52000, 49000, 47000]
-             }
-    df1 = DataFrame(data1, columns=['Country', 'GDP_Per_Capita'])
-
-    data2 = {'Year': [1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010],
-             'Unemployment_Rate': [9.8, 12, 8, 7.2, 6.9, 7, 6.5, 6.2, 5.5, 6.3]
-             }
-    df2 = DataFrame(data2, columns=['Year', 'Unemployment_Rate'])
-
-    data3 = {'Interest_Rate': [5, 5.5, 6, 5.5, 5.25, 6.5, 7, 8, 7.5, 8.5],
-             'Stock_Index_Price': [1500, 1520, 1525, 1523, 1515, 1540, 1545, 1560, 1555, 1565]
-             }
-    df3 = DataFrame(data3, columns=['Interest_Rate', 'Stock_Index_Price'])
-    root = Tk()
 
 
-    figure1 = plt.Figure(figsize=(6, 5), dpi=100)
-    ax1 = figure1.add_subplot(111)
-    bar1 = FigureCanvasTkAgg(figure1, root)
-    bar1.get_tk_widget().pack(side=LEFT, fill=BOTH)
-    df1 = df1[['Country', 'GDP_Per_Capita']].groupby('Country').sum()
-    df1.plot(kind='bar', legend=True, ax=ax1)
-    ax1.set_title('Country Vs. GDP Per Capita')
 
-    figure2 = plt.Figure(figsize=(5, 4), dpi=100)
-    ax2 = figure2.add_subplot(111)
-    line2 = FigureCanvasTkAgg(figure2, root)
-    line2.get_tk_widget().pack(side=LEFT, fill=BOTH)
-    df2 = df2[['Year', 'Unemployment_Rate']].groupby('Year').sum()
-    df2.plot(kind='line', legend=True, ax=ax2, color='r', marker='o', fontsize=10)
-    ax2.set_title('Year Vs. Unemployment Rate')
 
-    figure3 = plt.Figure(figsize=(5, 4), dpi=100)
-    ax3 = figure3.add_subplot(111)
-    ax3.scatter(df3['Interest_Rate'], df3['Stock_Index_Price'], color='g')
-    scatter3 = FigureCanvasTkAgg(figure3, root)
-    scatter3.get_tk_widget().pack(side=LEFT, fill=BOTH)
-    ax3.legend(['Stock_Index_Price'])
-    ax3.set_xlabel('Interest Rate')
-    ax3.set_title('Interest Rate Vs. Stock Index Price')
+
+
     top.mainloop()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
