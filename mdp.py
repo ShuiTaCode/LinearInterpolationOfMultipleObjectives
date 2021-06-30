@@ -1,7 +1,8 @@
 import numpy as np
+from numpy.random import default_rng
+
 from transition import Transition
 from state import State
-from numpy import random
 
 
 def delta_x(state1, state2):
@@ -38,10 +39,10 @@ class Mdp:
         return result
 
     def set_cliff(self, cliff_array):
+        self.cliff = cliff_array
         for cliff in cliff_array:
             for state in self.init_set_of_states:
                 if state.get_x() == cliff['x'] and state.get_y() == cliff['y']:
-                    state.set_end(True)
                     self.init_set_of_transitions = [tr for tr in self.init_set_of_transitions if
                                                     (tr.get_state() != state)]
                     self.init_set_of_transitions.append(Transition(state, 'exit', State(9, 9)))
@@ -53,9 +54,16 @@ class Mdp:
 
         self.init_set_of_transitions_probabilities = self.create_transition_probability()
         self.init_set_of_transitions_probabilities_and_rewards = self.create_transition_reward()
+        #self.run_iteration()
         # print('reward')
         # for ele in self.init_set_of_transitions_probabilities_and_rewards:
         #    print(ele.get_reward())
+
+    def part_of_cliff(self, check_state):
+        for state in self.cliff:
+            if check_state.get_x() == state['x'] and check_state.get_y() == state['y']:
+                return True
+        return False
 
     def calculate_prob(self, transition):
         left_border = transition.s.x == 0
@@ -64,7 +72,7 @@ class Mdp:
         bottom_border = transition.s.y == self.size - 1
 
         if transition.a == 'exit':
-            if transition.s.get_end():
+            if transition.s.get_end() or self.part_of_cliff(transition.get_state()):
                 return 1
             else:
                 return 0
@@ -153,23 +161,63 @@ class Mdp:
 
         return result
 
+    def transit(self, state):
+        rng = default_rng()
+        print('transit: action result for one state with prob', state.get_x(), state.get_y())
+        succ_states = []
+        prob = []
+        for t in [tr for tr in self.init_set_of_transitions_probabilities_and_rewards if
+                  tr.get_state() == state and tr.get_action() == state.get_value()['a']]:
+            print(t.__dict__, t.get_succ_state().get_x(), t.get_succ_state().get_y())
+            succ_states.append(t.get_succ_state())
+            prob.append(t.get_prob())
+
+        succ_state = rng.choice(succ_states, p=prob, )
+        # print('succstate', succ_state.__dict__)
+        return succ_state
+
+    def print_prob(self):
+        for state in self.init_set_of_states:
+            self.transit(state)
+
+    def run_episode(self):
+        current_state = self.init_state
+        i = 0
+        print('episode is running...')
+        while not current_state.get_end() and not self.part_of_cliff(current_state):
+            new_state = self.transit(current_state)
+            print('new state', new_state.__dict__)
+            current_state = new_state
+            i += 1
+
+        print('number of transitions', i)
+
+        if current_state.get_end():
+            return 1
+        else:
+            return -1
+
     def create_transition_reward(self):
         result = []
         for t in self.init_set_of_transitions_probabilities:
             if t.get_action() == 'exit':
-                if t.get_state() == self.end_state:
+                if t.get_state().get_end():
                     t.set_reward(1)
-                else:
+                elif self.part_of_cliff(t.get_state()):
                     t.set_reward(-1)
-
             result.append(t)
-
+        print('function ended')
         return result
 
     def solve_mdp(self):
-        while len([s for s in self.init_set_of_states if (s.get_value()['r'] != 0)]) < self.size * self.size:  # - 1:
-            self.run_iteration()
-        arr = []
+        if self.positive:
+            while len([s for s in self.init_set_of_states if (s.get_value()['r'] != 0)]) < self.size * self.size - 5:
+                self.run_iteration()
+        else:
+            while len([s for s in self.init_set_of_states if
+                       (s.get_value()['r'] != 0)]) < self.size * self.size - 1:
+                self.run_iteration()
+
         return self.init_set_of_states
 
     def return_max_val(self, arr):
@@ -193,9 +241,9 @@ class Mdp:
         return output
 
     def return_min_val(self, arr):
-        # print('min_val arr')
-        # for ele in arr:
-        #   print(ele['s'].__dict__, ele['a'], ele['r'])
+        #print('min_val arr from state',state.__dict__)
+        #for ele in arr:
+        #     print(ele['s'].__dict__, ele['a'], ele['r'])
         output = arr[0]
         for obj in arr:
             if obj['r'] < output['r']:
@@ -239,21 +287,19 @@ class Mdp:
     def return_start(self):
         return self.init_state
 
-
     def set_end(self, state_dict):
-
         for state in self.init_set_of_states:
             if state.get_x() == state_dict['x'] and state.get_y() == state_dict['y']:
                 state.set_end(True)
-                self.end_state = state
                 self.init_set_of_transitions = [tr for tr in self.init_set_of_transitions if
                                                 (tr.get_state() != state)]
                 self.init_set_of_transitions.append(Transition(state, 'exit', State(9, 9)))
-                self.init_set_of_transitions_probabilities = self.create_transition_probability()
-                self.init_set_of_transitions_probabilities_and_rewards = self.create_transition_reward()
-
             else:
                 state.set_end(False)
+
+        self.init_set_of_transitions_probabilities = self.create_transition_probability()
+        self.init_set_of_transitions_probabilities_and_rewards = self.create_transition_reward()
+        #self.run_iteration()
 
     def run_safe_iteration(self):
         # print('transformation wird ausgeführt')
@@ -282,7 +328,8 @@ class Mdp:
             print('FAIL BEFORE')
             return thisState.get_value()
         trans = [tr for tr in trans if
-                 tr.get_prob() >= 0.8 and tr.get_succ_state() != lastState and tr.get_succ_state() != thisState and tr.get_succ_state().get_value()['r']>thisState.get_value()['r']]
+                 tr.get_prob() >= 0.8 and tr.get_succ_state() != lastState and tr.get_succ_state() != thisState and
+                 tr.get_succ_state().get_value()['r'] > thisState.get_value()['r']]
         if thisState.get_end():
             print('SUCCESS')
             return thisState.get_value()['r']
@@ -305,9 +352,10 @@ class Mdp:
             print('states FAIL BEFORE')
             return []
         trans = [tr for tr in trans if
-                 tr.get_prob() >= 0.8 and tr.get_succ_state() != lastState and tr.get_succ_state() != thisState and tr.get_succ_state().get_value()['r']>thisState.get_value()['r']]
+                 tr.get_prob() >= 0.8 and tr.get_succ_state() != lastState and tr.get_succ_state() != thisState and
+                 tr.get_succ_state().get_value()['r'] > thisState.get_value()['r']]
         if thisState.get_end():
-            print('states SUCCESS',states)
+            print('states SUCCESS', states)
             res = states
             res.append(thisState)
             return res
@@ -323,7 +371,7 @@ class Mdp:
                 max_val = tr
         st = states
         st.append(max_val.get_state())
-        return self.accu_states(st,thisState, max_val.get_succ_state())
+        return self.accu_states(st, thisState, max_val.get_succ_state())
 
     def eval_policy(self):
         result = []
@@ -341,11 +389,11 @@ class Mdp:
                 })
 
             arr = [tr for tr in arr if tr['prob'] >= 0.8]
-            #if state.get_end() == False:
-                #print('array der nicht end states eval', state.get_x(), state.get_y())
-                #for value in arr:
-                 #   print(value['a'], value['r'], value['abs_val'], value['prob'], value['succ'].get_x(),
-                  #        value['succ'].get_y())
+            # if state.get_end() == False:
+            # print('array der nicht end states eval', state.get_x(), state.get_y())
+            # for value in arr:
+            #   print(value['a'], value['r'], value['abs_val'], value['prob'], value['succ'].get_x(),
+            #        value['succ'].get_y())
 
             max_val = self.return_max_val_abs(arr)
 
@@ -372,7 +420,7 @@ class Mdp:
     #         })
 
     def run_iteration(self):
-        #  print('iteration wird ausgeführt')
+        print('iteration wird ausgeführt')
         result = []
         for state in self.init_set_of_states:
             arr = []
@@ -388,15 +436,15 @@ class Mdp:
                 })
 
             arr = [tr for tr in arr if tr['prob'] >= 0.8]
-            #if state.get_end() == False and state.get_x() == 0 and state.get_y() == 3:
-             #   print('state 0 und 3', state.get_x(), state.get_y())
-              #  for value in arr:
-               #     print(value['a'], value['r'], value['abs_val'], value['prob'], value['succ'].get_x(),
-                #          value['succ'].get_y())
+            # if state.get_end() == False and state.get_x() == 0 and state.get_y() == 3:
+            #   print('state 0 und 3', state.get_x(), state.get_y())
+            #  for value in arr:
+            #     print(value['a'], value['r'], value['abs_val'], value['prob'], value['succ'].get_x(),
+            #          value['succ'].get_y())
             max_val = {}
-            if state.get_end() and state == self.end_state:
+            if state.get_end():
                 val = self.return_max_val(arr)
-            elif state.get_end():
+            if self.part_of_cliff(state) :
                 val = self.return_min_val(arr)
             elif self.positive:
                 val = self.return_max_val(arr)
@@ -407,11 +455,11 @@ class Mdp:
 
             all_max_val = [v for v in arr if (v['abs_val'] == max_val['abs_val'])]  # nur zwecks visualisierung
 
-         #   if state.get_end() == False and state.get_x() == 0 and state.get_y() == 3:
-               # print('state03 all max')
-                #for value in all_max_val:
-                 #   print(value['a'], value['r'], value['abs_val'], value['prob'], value['succ'].get_x(),
-                  #        value['succ'].get_y())
+            #   if state.get_end() == False and state.get_x() == 0 and state.get_y() == 3:
+            # print('state03 all max')
+            # for value in all_max_val:
+            #   print(value['a'], value['r'], value['abs_val'], value['prob'], value['succ'].get_x(),
+            #        value['succ'].get_y())
 
             # all_val = [v for v in arr if (v['r'] == val['r'])]  # nur zwecks visualisierung
             # state.set_add_values(all_max_val)  #
@@ -442,6 +490,7 @@ class Mdp:
         self.policy = policy
         self.init_set_of_states = self.create_set_of_states()
         self.init_state = {}
+        self.cliff = []
         # initial_distribution_of_states = create_random_initial_state_distribution(init_set_of_states)
         # self.initial_state = random.choice(self.init_set_of_states)
         # self.initial_state.set_start(True)
