@@ -243,9 +243,12 @@ def accu_reward(c):
     draw_graphs_and_policies(c)
 
 
-    mdp3.print_prob()
-    plot_episode_graph(episode_data)
-    plot_graph(mdp1_data, mdp2_data,sum_data)
+    #mdp3.print_prob()
+    fig = plt.figure()
+    plot_graph(mdp1_data, mdp2_data,sum_data,fig)
+    plot_episode_graph(episode_data,fig)
+    plt.show()
+
 
 def run_episode(c):
     pos_count=0
@@ -262,7 +265,7 @@ def run_episode(c):
         'neg':neg_count
     }
 
-def plot_episode_graph(episode_data):
+def plot_episode_graph(episode_data,fig):
     x = [ 0.0,0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,1.0]
     pos=[]
     neg=[]
@@ -270,27 +273,27 @@ def plot_episode_graph(episode_data):
         pos.append(episode['pos'])
         neg.append(episode['neg'])
 
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111)
+
+    ax1 = fig.add_subplot(122)
 
     ax1.scatter(x, pos, s=10, c='b', marker="s", label='pos')
     ax1.scatter(x, neg, s=10, c='r', marker="o", label='neg')
-    plt.legend(loc='upper right')
-    plt.show()
+    plt.legend(loc='upper left')
 
 
 
-def plot_graph(mdp1_data, mdp2_data,sum):
+
+def plot_graph(mdp1_data, mdp2_data,sum,fig):
     x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,1.0]
     # print('size',len(mdp1_data),len(mdp2_data),len(x))
-    fig = plt.figure()
-    ax1 = fig.add_subplot(111)
+   # fig = plt.figure()
+    ax1 = fig.add_subplot(121)
 
     ax1.scatter(x, mdp1_data, s=10, c='b', marker="s", label='left Mdp')
     ax1.scatter(x, mdp2_data, s=10, c='r', marker="o", label='right Mdp')
-    ax1.scatter(x, sum, s=10, c='g', marker="o", label='both')
+    #ax1.scatter(x, sum, s=10, c='g', marker="o", label='both')
     plt.legend(loc='upper right')
-    plt.show()
+
 
 
 

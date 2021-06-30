@@ -210,12 +210,8 @@ class Mdp:
         return result
 
     def solve_mdp(self):
-        if self.positive:
-            while len([s for s in self.init_set_of_states if (s.get_value()['r'] != 0)]) < self.size * self.size - 5:
-                self.run_iteration()
-        else:
-            while len([s for s in self.init_set_of_states if
-                       (s.get_value()['r'] != 0)]) < self.size * self.size - 1:
+        while len([s for s in self.init_set_of_states if
+                       (s.get_value()['r'] != 0)]) < self.size * self.size :
                 self.run_iteration()
 
         return self.init_set_of_states
