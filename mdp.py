@@ -172,7 +172,7 @@ class Mdp:
         for t in [tr for tr in self.init_set_of_transitions_probabilities_and_rewards if
                   tr.get_state() == state and tr.get_action() == random_action['a']]:
             print(t.__dict__, t.get_succ_state().get_x(), t.get_succ_state().get_y())
-            succ_states.append(t.get_succ_state())
+            succ_states.append(t)
             prob.append(t.get_prob())
 
         succ_state = rng.choice(succ_states, p=prob, )

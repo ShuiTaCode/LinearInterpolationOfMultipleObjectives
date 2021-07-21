@@ -1,5 +1,6 @@
 from tkinter import *
 
+import numpy
 from matplotlib import pyplot as plt
 
 from mdp import Mdp
@@ -250,16 +251,16 @@ def accu_reward(c):
 def run_episode(c):
     pos_count = 0
     neg_count = 0
-    count = 0
+    count = []
     for i in range(1000):
         res = mdp3.run_episode()
         if res['success']:
             pos_count += 1
-            count += res['iteration']
+            count.append(res['iteration'])
         else:
             neg_count += 1
-            count += res['iteration']
-    print('pos and neg count', pos_count, neg_count,count)
+            count.append(res['iteration'])
+    print('this is 1000 count', count)
     return {
         'pos': pos_count,
         'neg': neg_count,
@@ -271,7 +272,7 @@ def plot_episode_count(episode_data, fig):
     x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
     count = []
     for episode in episode_data:
-        count.append(episode['count'])
+        count.append(numpy.median(episode['count']))
 
     ax1 = fig.add_subplot(223)
 
