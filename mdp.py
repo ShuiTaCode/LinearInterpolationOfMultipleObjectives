@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.random import default_rng
-
+import random
 from transition import Transition
 from state import State
 
@@ -54,7 +54,7 @@ class Mdp:
 
         self.init_set_of_transitions_probabilities = self.create_transition_probability()
         self.init_set_of_transitions_probabilities_and_rewards = self.create_transition_reward()
-        #self.run_iteration()
+        # self.run_iteration()
         # print('reward')
         # for ele in self.init_set_of_transitions_probabilities_and_rewards:
         #    print(ele.get_reward())
@@ -163,11 +163,14 @@ class Mdp:
 
     def transit(self, state):
         rng = default_rng()
-        print('transit: action result for one state with prob', state.get_x(), state.get_y())
+        print('transit: action result for one state with prob', state.get_x(), state.get_y(), state.get_add_values())
         succ_states = []
         prob = []
+        random_action = random.choice(state.get_add_values())
+        if (len(state.get_add_values()) > 1):
+            print('mehrere Möglichkeiten', state.get_x(), state.get_y(), random_action['a'])
         for t in [tr for tr in self.init_set_of_transitions_probabilities_and_rewards if
-                  tr.get_state() == state and tr.get_action() == state.get_value()['a']]:
+                  tr.get_state() == state and tr.get_action() == random_action['a']]:
             print(t.__dict__, t.get_succ_state().get_x(), t.get_succ_state().get_y())
             succ_states.append(t.get_succ_state())
             prob.append(t.get_prob())
@@ -193,9 +196,11 @@ class Mdp:
         print('number of transitions', i)
 
         if current_state.get_end():
-            return 1
+            return {'iteration': i,
+                    'success': True}
         else:
-            return -1
+            return {'iteration': i,
+                    'success': False}
 
     def create_transition_reward(self):
         result = []
@@ -211,8 +216,8 @@ class Mdp:
 
     def solve_mdp(self):
         while len([s for s in self.init_set_of_states if
-                       (s.get_value()['r'] != 0)]) < self.size * self.size :
-                self.run_iteration()
+                   (s.get_value()['r'] != 0)]) < self.size * self.size:
+            self.run_iteration()
 
         return self.init_set_of_states
 
@@ -237,8 +242,8 @@ class Mdp:
         return output
 
     def return_min_val(self, arr):
-        #print('min_val arr from state',state.__dict__)
-        #for ele in arr:
+        # print('min_val arr from state',state.__dict__)
+        # for ele in arr:
         #     print(ele['s'].__dict__, ele['a'], ele['r'])
         output = arr[0]
         for obj in arr:
@@ -295,7 +300,7 @@ class Mdp:
 
         self.init_set_of_transitions_probabilities = self.create_transition_probability()
         self.init_set_of_transitions_probabilities_and_rewards = self.create_transition_reward()
-        #self.run_iteration()
+        # self.run_iteration()
 
     def run_safe_iteration(self):
         # print('transformation wird ausgeführt')
@@ -440,7 +445,7 @@ class Mdp:
             max_val = {}
             if state.get_end():
                 val = self.return_max_val(arr)
-            if self.part_of_cliff(state) :
+            if self.part_of_cliff(state):
                 val = self.return_min_val(arr)
             elif self.positive:
                 val = self.return_max_val(arr)

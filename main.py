@@ -20,7 +20,7 @@ scale_mdp_3 = space / size
 gamma = 0.9
 mdp1 = Mdp(size, gamma, [], False)
 mdp1.set_start({'x': 3, 'y': 4})
-#mdp1.set_end({'x': 3, 'y': 0})
+# mdp1.set_end({'x': 3, 'y': 0})
 mdp1.set_cliff([
     {'x': 4, 'y': 0},
     {'x': 4, 'y': 1},
@@ -33,7 +33,6 @@ mdp1.set_cliff([
 mdp2 = Mdp(size, gamma, [], True)
 mdp2.set_start({'x': 3, 'y': 4})
 mdp2.set_end({'x': 3, 'y': 0})
-
 
 mdp3 = Mdp(size, gamma, [], True)
 mdp3.set_start({'x': 3, 'y': 4})
@@ -64,28 +63,28 @@ def draw_triangle(c, x, y, w, h, action, reward, color):
     blibla = 15
     if reward < 999:
         if action == 'up':
-            c.create_line(x, y - blibla, x + half * w, y -blibla, fill=color, width=3)
-            c.create_line(x + half * w, y-blibla, x, y - half * h-blibla, fill=color, width=3)
-            c.create_line(x, y - half * h - blibla, x - half* w, y -blibla, fill=color, width=3)
-            c.create_line(x - half * w, y -blibla, x, y-blibla, fill=color, width=3)
+            c.create_line(x, y - blibla, x + half * w, y - blibla, fill=color, width=3)
+            c.create_line(x + half * w, y - blibla, x, y - half * h - blibla, fill=color, width=3)
+            c.create_line(x, y - half * h - blibla, x - half * w, y - blibla, fill=color, width=3)
+            c.create_line(x - half * w, y - blibla, x, y - blibla, fill=color, width=3)
             return
         if action == 'down':
-            c.create_line(x, y + blibla, x + half * w, y +blibla, fill=color, width=3)
-            c.create_line(x +half * w, y +blibla, x, y + half * h + blibla, fill=color, width=3)
-            c.create_line(x, y + half * h +blibla, x - half * w, y +blibla, fill=color, width=3)
-            c.create_line(x - half * w, y +blibla, x, y+ blibla, fill=color, width=3)
+            c.create_line(x, y + blibla, x + half * w, y + blibla, fill=color, width=3)
+            c.create_line(x + half * w, y + blibla, x, y + half * h + blibla, fill=color, width=3)
+            c.create_line(x, y + half * h + blibla, x - half * w, y + blibla, fill=color, width=3)
+            c.create_line(x - half * w, y + blibla, x, y + blibla, fill=color, width=3)
             return
         if action == 'left':
-            c.create_line(x - blibla, y, x -blibla, y - half * h, fill=color, width=3)
-            c.create_line(x -blibla, y - half * h, x -blibla - half * w, y, fill=color, width=3)
-            c.create_line(x - half * w - blibla, y, x-blibla, y + half * h, fill=color, width=3)
-            c.create_line(x -blibla, y + half * h, x -blibla, y, fill=color, width=3)
+            c.create_line(x - blibla, y, x - blibla, y - half * h, fill=color, width=3)
+            c.create_line(x - blibla, y - half * h, x - blibla - half * w, y, fill=color, width=3)
+            c.create_line(x - half * w - blibla, y, x - blibla, y + half * h, fill=color, width=3)
+            c.create_line(x - blibla, y + half * h, x - blibla, y, fill=color, width=3)
             return
         if action == 'right':
-            c.create_line(x +blibla, y, x +blibla, y - half * h, fill=color, width=3)
-            c.create_line(x +blibla, y - half * h, x + half * w +blibla, y, fill=color, width=3)
-            c.create_line(x + half * w + blibla, y, x +blibla, y + half * h, fill=color, width=3)
-            c.create_line(x +blibla, y + half * h, x +blibla, y, fill=color, width=3)
+            c.create_line(x + blibla, y, x + blibla, y - half * h, fill=color, width=3)
+            c.create_line(x + blibla, y - half * h, x + half * w + blibla, y, fill=color, width=3)
+            c.create_line(x + half * w + blibla, y, x + blibla, y + half * h, fill=color, width=3)
+            c.create_line(x + blibla, y + half * h, x + blibla, y, fill=color, width=3)
             return
 
 
@@ -136,8 +135,7 @@ def draw_policy(c, x, y, scale, set_of_states):
     for s in set_of_states:
         for max_value in s.get_add_values():
             draw_triangle(c, x + s.x * scale + 0.5 * scale, y + s.y * scale + 0.5 * scale, 0.5 * scale, 0.5 * scale,
-                           max_value['a'], s.value['r'], 'pink')
-
+                          max_value['a'], s.value['r'], 'pink')
 
 
 def run_iteration(c):
@@ -163,7 +161,7 @@ def run_safe_iteration(c):
     draw_graph(c, canvas_width - size * scale * 0.7, 100, scale * 0.7, mdp2)
 
 
-def calc_lin_combination(mdp1,mdp2,mdp3, alpha):
+def calc_lin_combination(mdp1, mdp2, mdp3, alpha):
     mdp1_states = mdp1.get_states()
     mdp2_states = mdp2.get_states()
     mdp3_states = mdp3.get_states()
@@ -176,10 +174,10 @@ def calc_lin_combination(mdp1,mdp2,mdp3, alpha):
         if not new_state.get_end() and not mdp3.part_of_cliff(new_state):
             new_state.set_value(new_value)
 
-        #if mdp1_states[i].get_end() or mdp2_states[i].get_end():
-         #   new_state.set_end(True)
-        #else:
-         #   new_state.set_end(False)
+        # if mdp1_states[i].get_end() or mdp2_states[i].get_end():
+        #   new_state.set_end(True)
+        # else:
+        #   new_state.set_end(False)
         new_states.append(new_state)
 
     mdp3.set_states(new_states)
@@ -204,34 +202,33 @@ def draw_graphs_and_policies(c):
     draw_graph(c, xmdp2, 0, scale * 0.7, mdp2)
     draw_graph(c, xmdp3, 0, scale_mdp_3, mdp3)
 
+
 def run_multi_safe_alg(c, input):
     mdp1.solve_mdp()
     mdp2.solve_mdp()
-    mdp3.set_states(calc_lin_combination(mdp1,mdp2,mdp3, input / 100))
+    mdp3.set_states(calc_lin_combination(mdp1, mdp2, mdp3, input / 100))
     mdp3.eval_policy()
     draw_graphs_and_policies(c)
-
-
 
 
 def accu_reward(c):
     mdp1_data = []
     mdp2_data = []
-    sum_data=[]
-    episode_data=[]
+    sum_data = []
+    episode_data = []
     mdp1.solve_mdp()
     mdp2.solve_mdp()
     c.delete('all')
 
     for x in range(0, 110, 10):
-        mdp3.set_states(calc_lin_combination(mdp1,mdp2,mdp3, x / 100))
+        mdp3.set_states(calc_lin_combination(mdp1, mdp2, mdp3, x / 100))
         # mdp3.run_iteration()
         mdp3.eval_policy()
-    #    if x>0 and x<100:
+        #    if x>0 and x<100:
         episode_data.append(run_episode(c))
 
-        reward_mdp1 = mdp1.return_start().get_value()['r']*(x/100)
-        reward_mdp2 = mdp2.return_start().get_value()['r']*(1-(x/100))
+        reward_mdp1 = mdp1.return_start().get_value()['r'] * (x / 100)
+        reward_mdp2 = mdp2.return_start().get_value()['r'] * (1 - (x / 100))
         sum = reward_mdp1 + reward_mdp2
 
         mdp1_data.append(reward_mdp1)
@@ -242,61 +239,71 @@ def accu_reward(c):
 
     draw_graphs_and_policies(c)
 
-
-    #mdp3.print_prob()
+    # mdp3.print_prob()
     fig = plt.figure()
-    plot_graph(mdp1_data, mdp2_data,sum_data,fig)
-    plot_episode_graph(episode_data,fig)
+    plot_graph(mdp1_data, mdp2_data, sum_data, fig)
+    plot_episode_count(episode_data, fig)
+    plot_episode_graph(episode_data, fig)
     plt.show()
 
 
 def run_episode(c):
-    pos_count=0
-    neg_count=0
+    pos_count = 0
+    neg_count = 0
+    count = 0
     for i in range(1000):
         res = mdp3.run_episode()
-        if res>0:
-            pos_count +=1
+        if res['success']:
+            pos_count += 1
+            count += res['iteration']
         else:
-            neg_count +=1
-    print('pos and neg count',pos_count,neg_count)
+            neg_count += 1
+            count += res['iteration']
+    print('pos and neg count', pos_count, neg_count,count)
     return {
-        'pos':pos_count,
-        'neg':neg_count
+        'pos': pos_count,
+        'neg': neg_count,
+        'count': count
     }
 
-def plot_episode_graph(episode_data,fig):
-    x = [ 0.0,0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,1.0]
-    pos=[]
-    neg=[]
+
+def plot_episode_count(episode_data, fig):
+    x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    count = []
+    for episode in episode_data:
+        count.append(episode['count'])
+
+    ax1 = fig.add_subplot(223)
+
+    ax1.scatter(x, count, s=10, c='b', marker="s", label='number of transitions')
+    plt.legend(loc='upper left')
+
+
+def plot_episode_graph(episode_data, fig):
+    x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    pos = []
+    neg = []
     for episode in episode_data:
         pos.append(episode['pos'])
         neg.append(episode['neg'])
 
-
-    ax1 = fig.add_subplot(122)
+    ax1 = fig.add_subplot(222)
 
     ax1.scatter(x, pos, s=10, c='b', marker="s", label='pos')
     ax1.scatter(x, neg, s=10, c='r', marker="o", label='neg')
     plt.legend(loc='upper left')
 
 
-
-
-def plot_graph(mdp1_data, mdp2_data,sum,fig):
-    x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,1.0]
+def plot_graph(mdp1_data, mdp2_data, sum, fig):
+    x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
     # print('size',len(mdp1_data),len(mdp2_data),len(x))
-   # fig = plt.figure()
-    ax1 = fig.add_subplot(121)
+    # fig = plt.figure()
+    ax1 = fig.add_subplot(221)
 
     ax1.scatter(x, mdp1_data, s=10, c='b', marker="s", label='left Mdp')
     ax1.scatter(x, mdp2_data, s=10, c='r', marker="o", label='right Mdp')
-    #ax1.scatter(x, sum, s=10, c='g', marker="o", label='both')
+    # ax1.scatter(x, sum, s=10, c='g', marker="o", label='both')
     plt.legend(loc='upper right')
-
-
-
-
 
 
 if __name__ == '__main__':
@@ -311,7 +318,6 @@ if __name__ == '__main__':
     frame = Frame(top)
     frame.grid(row=0, column=0, sticky="n")
 
-
     label1 = Label(frame, text="coefficient").grid(row=0, column=1, sticky="nw")
     label2 = Label(frame, text="alpha").grid(row=1, column=0, sticky="w")
 
@@ -321,17 +327,15 @@ if __name__ == '__main__':
     e1 = Entry(frame, validate='all', textvariable=v1, validatecommand=(validation, '%P')).grid(row=1, column=1,
                                                                                                 sticky=E + W)
 
-
-
     b1 = Button(frame, text="Solve Mdps",
                 command=lambda: solve_mds(c),
                 activeforeground="red", activebackground="pink", pady=10).grid(row=3, column=0, sticky="we")
     b2 = Button(frame, text="Linear Combination",
                 command=lambda: run_multi_safe_alg(c, int(v1.get())),
                 activeforeground="red", activebackground="pink", pady=10).grid(row=3, column=1, sticky="we")
-   # b3 = Button(frame, text="Increment Iteration",
+    # b3 = Button(frame, text="Increment Iteration",
     #            command=lambda: run_iteration(c),
-     #           activeforeground="red", activebackground="pink", pady=10).grid(row=3, column=2, sticky="we")
+    #           activeforeground="red", activebackground="pink", pady=10).grid(row=3, column=2, sticky="we")
     b4 = Button(frame, text="Accu reward",
                 command=lambda: accu_reward(c),
                 activeforeground="red", activebackground="pink", pady=10).grid(row=3, column=3, sticky="we")
@@ -341,7 +345,4 @@ if __name__ == '__main__':
 
     draw_graphs_and_policies(c)
 
-
     top.mainloop()
-
-
