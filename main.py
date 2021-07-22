@@ -242,7 +242,7 @@ def accu_reward(c):
 
     # mdp3.print_prob()
     fig = plt.figure()
-    plot_graph(mdp1_data, mdp2_data, sum_data, fig)
+    plot_graph(mdp1_data, mdp2_data, sum_data, episode_data, fig)
     plot_episode_count(episode_data, fig)
     plot_episode_graph(episode_data, fig)
     plt.show()
@@ -251,20 +251,26 @@ def accu_reward(c):
 def run_episode(c):
     pos_count = 0
     neg_count = 0
+    pos_reward=[]
+    neg_reward=[]
     count = []
     for i in range(1000):
         res = mdp3.run_episode()
         if res['success']:
             pos_count += 1
             count.append(res['iteration'])
+            pos_reward.append(res['discounted_reward'])
         else:
             neg_count += 1
             count.append(res['iteration'])
+            neg_reward.append(res['discounted_reward'])
     print('this is 1000 count', count)
     return {
         'pos': pos_count,
         'neg': neg_count,
-        'count': count
+        'count': count,
+        'pos_reward':pos_reward,
+        'neg_reward':neg_reward,
     }
 
 
@@ -295,16 +301,27 @@ def plot_episode_graph(episode_data, fig):
     plt.legend(loc='upper left')
 
 
-def plot_graph(mdp1_data, mdp2_data, sum, fig):
+def plot_graph(mdp1_data, mdp2_data, sum, episode_data,fig):
+    print('what is episode_data',episode_data)
+
+    pos_data=[]
+    neg_data=[]
+    for episode in episode_data:
+        pos_data.append(numpy.mean(episode['pos_reward']))
+        neg_data.append(numpy.mean(episode['neg_reward']))
+
+
     x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
     # print('size',len(mdp1_data),len(mdp2_data),len(x))
     # fig = plt.figure()
     ax1 = fig.add_subplot(221)
 
-    ax1.scatter(x, mdp1_data, s=10, c='b', marker="s", label='left Mdp')
+    ax1.scatter(x, mdp1_data, s=10, c='b', marker="o", label='left Mdp')
     ax1.scatter(x, mdp2_data, s=10, c='r', marker="o", label='right Mdp')
+    ax1.scatter(x, pos_data, s=10, c='#ff474c', marker="s", label='pos_data Mdp')
+    ax1.scatter(x, neg_data, s=10, c='#add8e6', marker="s", label='neg_data Mdp')
     # ax1.scatter(x, sum, s=10, c='g', marker="o", label='both')
-    plt.legend(loc='upper right')
+    plt.legend(loc='lower left')
 
 
 if __name__ == '__main__':

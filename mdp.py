@@ -164,20 +164,25 @@ class Mdp:
     def transit(self, state):
         rng = default_rng()
         print('transit: action result for one state with prob', state.get_x(), state.get_y(), state.get_add_values())
-        succ_states = []
+        transitons = []
         prob = []
         random_action = random.choice(state.get_add_values())
-        if (len(state.get_add_values()) > 1):
+        if len(state.get_add_values()) > 1:
             print('mehrere Möglichkeiten', state.get_x(), state.get_y(), random_action['a'])
         for t in [tr for tr in self.init_set_of_transitions_probabilities_and_rewards if
                   tr.get_state() == state and tr.get_action() == random_action['a']]:
             print(t.__dict__, t.get_succ_state().get_x(), t.get_succ_state().get_y())
-            succ_states.append(t)
+            transitons.append(t)
             prob.append(t.get_prob())
 
-        succ_state = rng.choice(succ_states, p=prob, )
+        transiton = rng.choice(transitons, p=prob, )
         # print('succstate', succ_state.__dict__)
-        return succ_state
+        return {
+            'succ_state': transiton.get_succ_state(),
+            'prob': transiton.get_prob(),
+            'reward': transiton.get_reward()
+
+        }
 
     def print_prob(self):
         for state in self.init_set_of_states:
@@ -187,20 +192,28 @@ class Mdp:
         current_state = self.init_state
         i = 0
         print('episode is running...')
+        discounted_reward = 1
         while not current_state.get_end() and not self.part_of_cliff(current_state):
             new_state = self.transit(current_state)
-            print('new state', new_state.__dict__)
-            current_state = new_state
+            print('new state', new_state)
+            current_state = new_state['succ_state']
+            discounted_reward *= new_state['prob']*self.gamma
             i += 1
-
+        if self.part_of_cliff(current_state):
+            print('cliff_collision')
+            discounted_reward *=-1
         print('number of transitions', i)
+        print('discounted_reward', discounted_reward)
 
         if current_state.get_end():
             return {'iteration': i,
-                    'success': True}
+                    'success': True,
+                    'discounted_reward':discounted_reward}
         else:
             return {'iteration': i,
-                    'success': False}
+                    'success': False,
+                    'discounted_reward': discounted_reward
+                    }
 
     def create_transition_reward(self):
         result = []
