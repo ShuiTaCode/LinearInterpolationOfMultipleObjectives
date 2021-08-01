@@ -10,6 +10,7 @@ canvas_width = 1460
 scale = 100
 size = 5
 xmdp1 = 0
+xmdp1 = 0
 padding = 25
 mdp_width = size * scale
 x_end_mdp1 = xmdp1 + mdp_width * 0.7
@@ -19,7 +20,7 @@ xmdp3 = x_end_mdp1 + padding
 scale_mdp_3 = space / size
 
 gamma = 0.9
-mdp1 = Mdp(size, gamma, [], False)
+mdp1 = Mdp(size, gamma, [], False,'cliff-world')
 mdp1.set_start({'x': 3, 'y': 4})
 # mdp1.set_end({'x': 3, 'y': 0})
 mdp1.set_cliff([
@@ -30,12 +31,18 @@ mdp1.set_cliff([
     {'x': 4, 'y': 4}
 ]
 )
+#mdp1.set_solid_states([
+ #   {'x': 0, 'y': 0},
+  #  {'x': 0, 'y': 1},
+   # {'x': 0, 'y': 2},
+#]
+#)
 # policy1 = mdp1.solve_mdp()
-mdp2 = Mdp(size, gamma, [], True)
+mdp2 = Mdp(size, gamma, [], True,'cliff-world')
 mdp2.set_start({'x': 3, 'y': 4})
 mdp2.set_end({'x': 3, 'y': 0})
 
-mdp3 = Mdp(size, gamma, [], True)
+mdp3 = Mdp(size, gamma, [], True,'cliff-world')
 mdp3.set_start({'x': 3, 'y': 4})
 mdp3.set_end({'x': 3, 'y': 0})
 mdp3.set_cliff([
@@ -45,11 +52,14 @@ mdp3.set_cliff([
     {'x': 4, 'y': 3},
     {'x': 4, 'y': 4}
 ])
-mdp3.run_iteration()
+#mdp3.run_iteration()
 # policy2 = mdp2.solve_mdp()
 
-coef_mdp_left = 0
-coef_mdp_right = 0
+mdp4 = Mdp(size, gamma, [], False,'deep-sea-treasure')
+
+
+
+
 
 
 def draw_square(c, x, y, w, h, color):
@@ -99,22 +109,29 @@ def validate_input(P):
 def draw_graph(c, x, y, scale, mdp):
     temp_init_state = {}
     end_states = []
+    solid_states = []
     for s in mdp.get_states():
-        if s.get_start():
+        if s.get_solid():
+            solid_states.append(s)
+        elif s.get_start():
             temp_init_state = s
         elif s.get_end() or mdp.part_of_cliff(s):
             end_states.append(s)
         else:
             draw_square(c, x + s.x * scale, y + s.y * scale, scale, scale, 'black')
-            c.create_text(x + s.x * scale + scale / 2, y + s.y * scale + scale / 2, text=s.get_value()['r'],
+            c.create_text(x + s.x * scale + scale / 2, y + s.y * scale + scale / 2, text=round(s.get_value()['r'],3),
                           anchor='nw',
                           font='TkMenuFont', fill='black')
     draw_square(c, x + temp_init_state.get_x() * scale, y + temp_init_state.get_y() * scale, scale, scale, 'blue')
     c.create_text(x + temp_init_state.x * scale, y + temp_init_state.y * scale, text='Start', anchor='nw',
                   font='TkMenuFont', fill='blue')
     c.create_text(x + temp_init_state.x * scale + scale / 2, y + temp_init_state.y * scale + scale / 2,
-                  text=temp_init_state.get_value()['r'], anchor='nw',
+                  text=round(temp_init_state.get_value()['r'],3), anchor='nw',
                   font='TkMenuFont', fill='black')
+    for state in solid_states:
+        c.create_rectangle(x + state.x * scale, y + state.y * scale, x + state.x * scale + scale,
+                           y + state.y * scale + scale, fill="grey", outline='black')
+        # draw_square(c, x + state.x * scale, y + state.y * scale, scale, scale, 'grey')
 
     for temp_end_state in end_states:
         if temp_end_state.get_value()['r'] >= 0:
@@ -140,26 +157,20 @@ def draw_policy(c, x, y, scale, set_of_states):
 
 
 def run_iteration(c):
-    mdp1.run_iteration()
-    mdp2.run_iteration()
+    mdp1.increment_iteration()
+    mdp2.increment_iteration()
     # mdp3.set_states(calc_lin_combination(mdp1.get_states(), mdp2.get_states(), mdp3.get_states(), int(v1.get()) / 100,
     #                                     int(v2.get()) / 100))
-    c.delete('all')
-    draw_policy(c, xmdp1, 0, scale * 0.7, mdp1.get_states())
-    draw_policy(c, xmdp2, 0, scale * 0.7, mdp2.get_states())
+    # c.delete('all')
+    # draw_policy(c, xmdp1, 0, scale * 0.7, mdp1.get_states())
+    # draw_policy(c, xmdp2, 0, scale * 0.7, mdp2.get_states())
     # draw_policy(c, xmdp3, 0, scale_mdp_3, mdp3.get_states())
-    draw_graph(c, xmdp1, 0, scale * 0.7, mdp1)
-    draw_graph(c, xmdp2, 0, scale * 0.7, mdp2)
-    draw_graph(c, xmdp3, 0, scale_mdp_3, mdp3)
+    # draw_graph(c, xmdp1, 0, scale * 0.7, mdp1)
+    # draw_graph(c, xmdp2, 0, scale * 0.7, mdp2)
+    # draw_graph(c, xmdp3, 0, scale_mdp_3, mdp3)
+    draw_graphs_and_policies(c)
 
 
-def run_safe_iteration(c):
-    mdp2.run_safe_iteration()
-    c.delete('all')
-    draw_policy(c, xmdp1, 100, scale * 0.7, mdp1.get_states())
-    draw_policy(c, canvas_width - size * scale * 0.7, 100, scale * 0.7, mdp2.get_states())
-    draw_graph(c, xmdp1, 100, scale * 0.7, mdp1)
-    draw_graph(c, canvas_width - size * scale * 0.7, 100, scale * 0.7, mdp2)
 
 
 def calc_lin_combination(mdp1, mdp2, mdp3, alpha):
@@ -182,7 +193,7 @@ def calc_lin_combination(mdp1, mdp2, mdp3, alpha):
         new_states.append(new_state)
 
     mdp3.set_states(new_states)
-    #    mdp3.eval_policy()
+    mdp3.eval_policy()
     # mdp3.run_iteration()
 
     return mdp3.get_states()
@@ -208,7 +219,7 @@ def run_multi_safe_alg(c, input):
     mdp1.solve_mdp()
     mdp2.solve_mdp()
     mdp3.set_states(calc_lin_combination(mdp1, mdp2, mdp3, input / 100))
-    mdp3.eval_policy()
+    #mdp3.eval_policy()
     draw_graphs_and_policies(c)
 
 
@@ -251,8 +262,8 @@ def accu_reward(c):
 def run_episode(c):
     pos_count = 0
     neg_count = 0
-    pos_reward=[]
-    neg_reward=[]
+    pos_reward = []
+    neg_reward = []
     count = []
     for i in range(1000):
         res = mdp3.run_episode()
@@ -269,8 +280,8 @@ def run_episode(c):
         'pos': pos_count,
         'neg': neg_count,
         'count': count,
-        'pos_reward':pos_reward,
-        'neg_reward':neg_reward,
+        'pos_reward': pos_reward,
+        'neg_reward': neg_reward,
     }
 
 
@@ -301,15 +312,14 @@ def plot_episode_graph(episode_data, fig):
     plt.legend(loc='upper left')
 
 
-def plot_graph(mdp1_data, mdp2_data, sum, episode_data,fig):
-    print('what is episode_data',episode_data)
+def plot_graph(mdp1_data, mdp2_data, sum, episode_data, fig):
+    print('what is episode_data', episode_data)
 
-    pos_data=[]
-    neg_data=[]
+    pos_data = []
+    neg_data = []
     for episode in episode_data:
         pos_data.append(numpy.mean(episode['pos_reward']))
         neg_data.append(numpy.mean(episode['neg_reward']))
-
 
     x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
     # print('size',len(mdp1_data),len(mdp2_data),len(x))
@@ -351,9 +361,9 @@ if __name__ == '__main__':
     b2 = Button(frame, text="Linear Combination",
                 command=lambda: run_multi_safe_alg(c, int(v1.get())),
                 activeforeground="red", activebackground="pink", pady=10).grid(row=3, column=1, sticky="we")
-    # b3 = Button(frame, text="Increment Iteration",
-    #            command=lambda: run_iteration(c),
-    #           activeforeground="red", activebackground="pink", pady=10).grid(row=3, column=2, sticky="we")
+    b3 = Button(frame, text="Increment Iteration",
+                command=lambda: run_iteration(c),
+                activeforeground="red", activebackground="pink", pady=10).grid(row=3, column=2, sticky="we")
     b4 = Button(frame, text="Accu reward",
                 command=lambda: accu_reward(c),
                 activeforeground="red", activebackground="pink", pady=10).grid(row=3, column=3, sticky="we")
