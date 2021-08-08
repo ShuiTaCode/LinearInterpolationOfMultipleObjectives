@@ -1,5 +1,5 @@
 from tkinter import *
-
+import functools
 import numpy
 from matplotlib import pyplot as plt
 
@@ -20,46 +20,91 @@ xmdp3 = x_end_mdp1 + padding
 scale_mdp_3 = space / size
 
 gamma = 0.9
-mdp1 = Mdp(size, gamma, [], False,'cliff-world')
-mdp1.set_start({'x': 3, 'y': 4})
-# mdp1.set_end({'x': 3, 'y': 0})
-mdp1.set_cliff([
-    {'x': 4, 'y': 0},
-    {'x': 4, 'y': 1},
-    {'x': 4, 'y': 2},
-    {'x': 4, 'y': 3},
-    {'x': 4, 'y': 4}
-]
-)
-#mdp1.set_solid_states([
- #   {'x': 0, 'y': 0},
-  #  {'x': 0, 'y': 1},
-   # {'x': 0, 'y': 2},
-#]
-#)
-# policy1 = mdp1.solve_mdp()
-mdp2 = Mdp(size, gamma, [], True,'cliff-world')
-mdp2.set_start({'x': 3, 'y': 4})
-mdp2.set_end({'x': 3, 'y': 0})
-
-mdp3 = Mdp(size, gamma, [], True,'cliff-world')
-mdp3.set_start({'x': 3, 'y': 4})
-mdp3.set_end({'x': 3, 'y': 0})
-mdp3.set_cliff([
-    {'x': 4, 'y': 0},
-    {'x': 4, 'y': 1},
-    {'x': 4, 'y': 2},
-    {'x': 4, 'y': 3},
-    {'x': 4, 'y': 4}
-])
-#mdp3.run_iteration()
-# policy2 = mdp2.solve_mdp()
-
-mdp4 = Mdp(size, gamma, [], False,'deep-sea-treasure')
 
 
+def start_cliff_world(m1,m2,m3):
+    m1.set_environment('cliff-world')
+    m2.set_environment('cliff-world')
+    m3.set_environment('cliff-world')
+    m1.set_start({'x': 3, 'y': 4})
+    # mdp1.set_end({'x': 3, 'y': 0})
+    m1.set_cliff([
+        {'x': 4, 'y': 0},
+        {'x': 4, 'y': 1},
+        {'x': 4, 'y': 2},
+        {'x': 4, 'y': 3},
+        {'x': 4, 'y': 4}
+    ]
+    )
+    #mdp1.set_solid_states([
+     #   {'x': 0, 'y': 0},
+      #  {'x': 0, 'y': 1},
+       # {'x': 0, 'y': 2},
+    #]
+    #)
+    # policy1 = mdp1.solve_mdp()
+    m2.set_start({'x': 3, 'y': 4})
+    m2.set_end({'x': 3, 'y': 0,'reward':1})
+
+    m3.set_start({'x': 3, 'y': 4})
+    m3.set_end({'x': 3, 'y': 0,'reward':1})
+    m3.set_cliff([
+        {'x': 4, 'y': 0},
+        {'x': 4, 'y': 1},
+        {'x': 4, 'y': 2},
+        {'x': 4, 'y': 3},
+        {'x': 4, 'y': 4}
+    ])
+    m3.increment_iteration()
+    draw_graphs_and_policies(c,m1,m2,m3)
+
+def get_solid_states_for_deep_sea(end_state_arr):
+    res = []
+    for state in end_state_arr:
+        i = state.get_y() + 1
+        while i < size:
+            res.append({'x':state.get_x(), 'y':i})
+            i +=1
+    return res
+
+def start_deep_sea_treasure(m1,m2,m3):
+    m1.set_environment('cliff-world')
+    m2.set_environment('cliff-world')
+    m2.set_environment('cliff-world')
+    m3.set_environment('cliff-world')
+    m1.set_start({'x': 0, 'y': 0})
+    m1.set_end({'x': 4, 'y': 4,'reward':-1000})
+    # mdp1.set_end({'x': 3, 'y': 0})
+    # mdp1.set_solid_states([
+    #   {'x': 0, 'y': 0},
+    #  {'x': 0, 'y': 1},
+    # {'x': 0, 'y': 2},
+    # ]
+    # )
+    # policy1 = mdp1.solve_mdp()
+    m2.set_start({'x': 0, 'y': 0})
+    m2.set_end({'x': 0, 'y':1, 'reward': 3})
+    m2.set_end({'x': 1, 'y': 2, 'reward': 7})
+    m2.set_end({'x': 2, 'y': 2, 'reward': 14})
+    m2.set_end({'x': 3, 'y': 3, 'reward': 15})
+    m2.set_end({'x': 4, 'y': 4, 'reward': 20})
 
 
+
+    m3.set_start({'x': 0, 'y': 0})
+    m3.set_end({'x': 0, 'y': 1, 'reward': 3})
+    m3.set_end({'x': 1, 'y': 2, 'reward': 7})
+    m3.set_end({'x': 2, 'y': 2, 'reward': 14})
+    m3.set_end({'x': 3, 'y': 3, 'reward': 15})
+    m3.set_end({'x': 4, 'y': 4, 'reward': 20})
+
+    solidstates = get_solid_states_for_deep_sea([state for state in m2.get_states() if state.get_end()])
+    mdp1.set_solid_states(solidstates)
+    mdp2.set_solid_states(solidstates)
+    mdp3.set_solid_states(solidstates)
+    m3.increment_iteration()
+    draw_graphs_and_policies(c,m1,m2,m3)
+    print('new enviroment chosen')
 
 
 def draw_square(c, x, y, w, h, color):
@@ -153,12 +198,12 @@ def draw_policy(c, x, y, scale, set_of_states):
     for s in set_of_states:
         for max_value in s.get_add_values():
             draw_triangle(c, x + s.x * scale + 0.5 * scale, y + s.y * scale + 0.5 * scale, 0.5 * scale, 0.5 * scale,
-                          max_value['a'], s.value['r'], 'pink')
+                          max_value['a'], s.value['r'], 'black')
 
 
-def run_iteration(c):
-    mdp1.increment_iteration()
-    mdp2.increment_iteration()
+def run_iteration(c,m1,m2,m3):
+    m1.increment_iteration()
+    m2.increment_iteration()
     # mdp3.set_states(calc_lin_combination(mdp1.get_states(), mdp2.get_states(), mdp3.get_states(), int(v1.get()) / 100,
     #                                     int(v2.get()) / 100))
     # c.delete('all')
@@ -168,7 +213,7 @@ def run_iteration(c):
     # draw_graph(c, xmdp1, 0, scale * 0.7, mdp1)
     # draw_graph(c, xmdp2, 0, scale * 0.7, mdp2)
     # draw_graph(c, xmdp3, 0, scale_mdp_3, mdp3)
-    draw_graphs_and_policies(c)
+    draw_graphs_and_policies(c,m1,m2,m3)
 
 
 
@@ -199,31 +244,31 @@ def calc_lin_combination(mdp1, mdp2, mdp3, alpha):
     return mdp3.get_states()
 
 
-def solve_mds(c):
+def solve_mds(c,m1,m2,m3):
     mdp1.solve_mdp()
     mdp2.solve_mdp()
-    draw_graphs_and_policies(c)
+    draw_graphs_and_policies(c,m1,m2,m3)
 
 
-def draw_graphs_and_policies(c):
+def draw_graphs_and_policies(c,mdp1n,mdp2n,mdp3n):
     c.delete('all')
-    draw_policy(c, xmdp1, 0, scale * 0.7, mdp1.get_states())
-    draw_policy(c, xmdp2, 0, scale * 0.7, mdp2.get_states())
-    draw_policy(c, xmdp3, 0, scale_mdp_3, mdp3.get_states())
-    draw_graph(c, xmdp1, 0, scale * 0.7, mdp1)
-    draw_graph(c, xmdp2, 0, scale * 0.7, mdp2)
-    draw_graph(c, xmdp3, 0, scale_mdp_3, mdp3)
+    draw_policy(c, xmdp1, 0, scale * 0.7, mdp1n.get_states())
+    draw_policy(c, xmdp2, 0, scale * 0.7, mdp2n.get_states())
+    draw_policy(c, xmdp3, 0, scale_mdp_3, mdp3n.get_states())
+    draw_graph(c, xmdp1, 0, scale * 0.7, mdp1n)
+    draw_graph(c, xmdp2, 0, scale * 0.7, mdp2n)
+    draw_graph(c, xmdp3, 0, scale_mdp_3, mdp3n)
 
 
-def run_multi_safe_alg(c, input):
-    mdp1.solve_mdp()
-    mdp2.solve_mdp()
-    mdp3.set_states(calc_lin_combination(mdp1, mdp2, mdp3, input / 100))
+def run_multi_safe_alg(c, input,m1,m2,m3):
+    m1.solve_mdp()
+    m2.solve_mdp()
+    m3.set_states(calc_lin_combination(m1, m2, m3, input / 100))
     #mdp3.eval_policy()
-    draw_graphs_and_policies(c)
+    draw_graphs_and_policies(c,m1,m2,m3)
 
 
-def accu_reward(c):
+def accu_reward(c,m1,m2,m3):
     mdp1_data = []
     mdp2_data = []
     sum_data = []
@@ -233,14 +278,14 @@ def accu_reward(c):
     c.delete('all')
 
     for x in range(0, 110, 10):
-        mdp3.set_states(calc_lin_combination(mdp1, mdp2, mdp3, x / 100))
+        m3.set_states(calc_lin_combination(mdp1, mdp2, mdp3, x / 100))
         # mdp3.run_iteration()
-        mdp3.eval_policy()
+        m3.eval_policy()
         #    if x>0 and x<100:
         episode_data.append(run_episode(c))
 
-        reward_mdp1 = mdp1.return_start().get_value()['r'] * (x / 100)
-        reward_mdp2 = mdp2.return_start().get_value()['r'] * (1 - (x / 100))
+        reward_mdp1 = m1.return_start().get_value()['r'] * (x / 100)
+        reward_mdp2 = m2.return_start().get_value()['r'] * (1 - (x / 100))
         sum = reward_mdp1 + reward_mdp2
 
         mdp1_data.append(reward_mdp1)
@@ -249,7 +294,7 @@ def accu_reward(c):
         print('final reward mdp1 for alpha ' + str(x), reward_mdp1)
         print('final reward mdp2 for alpha ' + str(x), reward_mdp2)
 
-    draw_graphs_and_policies(c)
+    draw_graphs_and_policies(c,m1,m2,m3)
 
     # mdp3.print_prob()
     fig = plt.figure()
@@ -318,8 +363,8 @@ def plot_graph(mdp1_data, mdp2_data, sum, episode_data, fig):
     pos_data = []
     neg_data = []
     for episode in episode_data:
-        pos_data.append(numpy.mean(episode['pos_reward']))
-        neg_data.append(numpy.mean(episode['neg_reward']))
+        pos_data.append(numpy.median(episode['pos_reward']))
+        neg_data.append(numpy.median(episode['neg_reward']))
 
     x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
     # print('size',len(mdp1_data),len(mdp2_data),len(x))
@@ -333,12 +378,27 @@ def plot_graph(mdp1_data, mdp2_data, sum, episode_data, fig):
     # ax1.scatter(x, sum, s=10, c='g', marker="o", label='both')
     plt.legend(loc='lower left')
 
+def environment_change_event(m1,m2,m3):
+    print('environment changed: ',env_option.get())
+    option = env_option.get()
+    if option == 'cliff-world':
+        start_cliff_world(m1,m2,m3)
+    if option == 'deep-sea-treasure':
+        start_deep_sea_treasure(m1,m2,m3)
 
 if __name__ == '__main__':
+    mdp1 = Mdp(size, gamma, [], False)
+    mdp2 = Mdp(size, gamma, [], True)
+    mdp3 = Mdp(size, gamma, [], True)
     top = Tk()
 
-    stvar = StringVar()
-    stvar.set("one")
+   # stvar = StringVar()
+   # stvar.set("one")
+
+    env_options = ['cliff-world','deep-sea-treasure']
+    env_option = StringVar(value=env_options[0])
+    #env_option.set(env_options[0])  # the first value
+    env_option.trace("w", lambda name, index, mode, sv=env_option: environment_change_event(mdp1,mdp2,mdp3))
 
     c = Canvas(top, width=canvas_width, height=1000, background='white')
     c.grid(row=1, column=0)
@@ -346,31 +406,40 @@ if __name__ == '__main__':
     frame = Frame(top)
     frame.grid(row=0, column=0, sticky="n")
 
-    label1 = Label(frame, text="coefficient").grid(row=0, column=1, sticky="nw")
-    label2 = Label(frame, text="alpha").grid(row=1, column=0, sticky="w")
+    label1 = Label(frame, text="coefficient").grid(row=1, column=1, sticky="nw")
+    label2 = Label(frame, text="alpha").grid(row=2, column=0, sticky="w")
 
     validation = (frame.register(validate_input))
     v1 = StringVar(frame, value='0')
 
-    e1 = Entry(frame, validate='all', textvariable=v1, validatecommand=(validation, '%P')).grid(row=1, column=1,
+    e1 = Entry(frame, validate='all', textvariable=v1, validatecommand=(validation, '%P')).grid(row=2, column=1,
                                                                                                 sticky=E + W)
 
     b1 = Button(frame, text="Solve Mdps",
-                command=lambda: solve_mds(c),
+                command=lambda: solve_mds(c,mdp1,mdp2,mdp3),
                 activeforeground="red", activebackground="pink", pady=10).grid(row=3, column=0, sticky="we")
     b2 = Button(frame, text="Linear Combination",
-                command=lambda: run_multi_safe_alg(c, int(v1.get())),
+                command=lambda: run_multi_safe_alg(c, int(v1.get()),mdp1,mdp2,mdp3),
                 activeforeground="red", activebackground="pink", pady=10).grid(row=3, column=1, sticky="we")
     b3 = Button(frame, text="Increment Iteration",
-                command=lambda: run_iteration(c),
+                command=lambda: run_iteration(c,mdp1,mdp2,mdp3),
                 activeforeground="red", activebackground="pink", pady=10).grid(row=3, column=2, sticky="we")
     b4 = Button(frame, text="Accu reward",
-                command=lambda: accu_reward(c),
+                command=lambda: accu_reward(c,mdp1,mdp2,mdp3),
                 activeforeground="red", activebackground="pink", pady=10).grid(row=3, column=3, sticky="we")
     b5 = Button(frame, text="run episode",
                 command=lambda: run_episode(c),
                 activeforeground="red", activebackground="pink", pady=10).grid(row=3, column=4, sticky="we")
+    w = OptionMenu(frame, env_option, *env_options).grid(row=0,column=1)
 
-    draw_graphs_and_policies(c)
+
+
+
+    # These are the titles
+    l1 = Label(frame, text='Select environment', width=15)
+    l1.grid(row=0, column=0)
+    start_cliff_world(mdp1,mdp2,mdp3)
+    run_iteration(c, mdp1, mdp2, mdp3)
+    #draw_graphs_and_policies(c)
 
     top.mainloop()
