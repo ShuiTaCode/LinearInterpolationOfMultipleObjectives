@@ -48,15 +48,17 @@ class Mdp:
             transition = Transition(state, 'exit', State(9, 9))
             transition.set_prob(1)
             transition.set_reward(-1)
-        # self.init_set_of_transitions = [tr for tr in self.init_set_of_transitions if
-        #                              tr.get_state().get_end() and tr.get_action=='exit'  ]
+            # self.init_set_of_transitions = [tr for tr in self.init_set_of_transitions if
+            #                              tr.get_state().get_end() and tr.get_action=='exit'  ]
 
-        # self.init_set_of_transitions = self.create_set_of_transitions()
+            # self.init_set_of_transitions = self.create_set_of_transitions()
 
-            #self.init_set_of_transitions_probabilities = self.create_transition_probability()
-            #self.init_set_of_transitions_probabilities_and_rewards = self.create_transition_reward()
-            self.init_set_of_transitions_probabilities_and_rewards = [tr for tr in self.init_set_of_transitions_probabilities_and_rewards if
-                                                                       tr.get_state() != state]
+            # self.init_set_of_transitions_probabilities = self.create_transition_probability()
+            # self.init_set_of_transitions_probabilities_and_rewards = self.create_transition_reward()
+            self.init_set_of_transitions_probabilities_and_rewards = [tr for tr in
+                                                                      self.init_set_of_transitions_probabilities_and_rewards
+                                                                      if
+                                                                      tr.get_state() != state]
             self.init_set_of_transitions_probabilities_and_rewards.append(transition)
         # self.run_iteration()
         # print('reward')
@@ -83,11 +85,10 @@ class Mdp:
                                                                           transition.s.y - 1).get_solid()
         bottom_border = transition.s.y == self.size - 1 or self.get_state_by_coordinates(transition.s.x,
                                                                                          transition.s.y + 1).get_solid()
-      #  if transition.get_action() == 'exit':
-       #     #print('WZTF' ,transition.get_state().__dict__,transition.get_action(),transition.get_succ_state().__dict__)
+        #  if transition.get_action() == 'exit':
+        #     #print('WZTF' ,transition.get_state().__dict__,transition.get_action(),transition.get_succ_state().__dict__)
         #    if transition.get_state().get_end() or self.part_of_cliff(transition.get_state()):
-         #       return 1
-
+        #       return 1
 
         if transition.a == self.init_set_of_actions[0]:  # action = up
             if transition.s_succ == transition.s:  # stay
@@ -205,7 +206,7 @@ class Mdp:
         discounted_reward = 1
         while not current_state.get_end() and not self.part_of_cliff(current_state):
             new_state = self.transit(current_state)
-            #print('new state', new_state)
+            # print('new state', new_state)
             current_state = new_state['succ_state']
             discounted_reward *= new_state['prob'] * self.gamma
             i += 1
@@ -216,6 +217,7 @@ class Mdp:
         print('discounted_reward', discounted_reward)
 
         if current_state.get_end():
+            print('success!', i,discounted_reward )
             return {'iteration': i,
                     'success': True,
                     'discounted_reward': discounted_reward}
@@ -234,19 +236,19 @@ class Mdp:
         print('function ended')
         return result
 
-    def solve_mdp(self):
-        theta=0.001
-        delta=0
+    def solve_mdp(self, size):
+        theta = 0.001
         converged = False
+        i = 0
         while not converged:
-            delta_check=True
+            delta_check = True
             old_states = copy.deepcopy(self.init_set_of_states)
             self.increment_iteration()
             for x in range(len(self.init_set_of_states)):
                 delta = np.abs(self.init_set_of_states[x].get_value()['r'] - old_states[x].get_value()['r'])
                 delta_check = delta_check and delta < theta
-
-            converged = delta_check
+            converged = delta_check and i >= int(size.get())
+            i += 1
         print('mdp_solved')
         for state in self.init_set_of_states:
             print(state.__dict__)
@@ -266,9 +268,6 @@ class Mdp:
         print('output for state', arr[0]['s'].get_x(), arr[0]['s'].get_y(), output['r'])
         return output
 
-
-
-
     def return_max_val_abs(self, arr):
         # print('max_val arr')
         # for ele in arr:
@@ -280,7 +279,6 @@ class Mdp:
             if obj['abs_val'] > output['abs_val']:
                 output = obj
         return output
-
 
     def set_states(self, set_of_states):
         self.init_set_of_states = set_of_states
@@ -296,19 +294,20 @@ class Mdp:
     def return_start(self):
         return self.init_state
 
-
     def set_end(self, state_dict):
         state = self.get_state_by_coordinates(state_dict['x'], state_dict['y'])
         state.set_end(True)
-        #self.init_set_of_transitions = [tr for tr in self.init_set_of_transitions if
+        # self.init_set_of_transitions = [tr for tr in self.init_set_of_transitions if
         #                                (tr.get_state() != state)]
         transition = Transition(state, 'exit', State(9, 9))
         transition.set_prob(1)
         transition.set_reward(state_dict['reward'])
-        #self.init_set_of_transitions_probabilities = self.create_transition_probability()
-        #self.init_set_of_transitions_probabilities_and_rewards = self.create_transition_reward()
-        self.init_set_of_transitions_probabilities_and_rewards =  [tr for tr in self.init_set_of_transitions_probabilities_and_rewards if
-                                        (tr.get_state() != state)]
+        # self.init_set_of_transitions_probabilities = self.create_transition_probability()
+        # self.init_set_of_transitions_probabilities_and_rewards = self.create_transition_reward()
+        self.init_set_of_transitions_probabilities_and_rewards = [tr for tr in
+                                                                  self.init_set_of_transitions_probabilities_and_rewards
+                                                                  if
+                                                                  (tr.get_state() != state)]
         self.init_set_of_transitions_probabilities_and_rewards.append(transition)
 
         # for state in self.init_set_of_states:
@@ -319,8 +318,6 @@ class Mdp:
         #        state.set_end(False)
 
         # self.run_iteration()
-
-
 
     def accu_states(self, states, last_state, this_state):
         trans = [tr for tr in self.init_set_of_transitions_probabilities_and_rewards if tr.get_state() == this_state]
@@ -353,11 +350,10 @@ class Mdp:
         return [t for t in self.init_set_of_transitions_probabilities_and_rewards if
                 (t.get_state() == state)]
 
-
     def increment_iteration(self):
-        states = [state for state in self.init_set_of_states ]
-                  #if
-                  #(not state.get_end()) and (not self.part_of_cliff(state))]
+        states = [state for state in self.init_set_of_states]
+        # if
+        # (not state.get_end()) and (not self.part_of_cliff(state))]
         result = []
         for state in states:
             arr = []
@@ -365,21 +361,20 @@ class Mdp:
                 possible_transitions = [tr for tr in self.get_transitions_for_state(state) if tr.get_action() == action]
                 value = 0
                 action_value = {}
-                print('possible trans: ',possible_transitions)
+                print('possible trans: ', possible_transitions)
                 for transition in possible_transitions:
-
                     value += (transition.get_prob() * (
-                                transition.get_reward() + self.gamma * transition.get_succ_state().get_value()['r']))
+                            transition.get_reward() + self.gamma * transition.get_succ_state().get_value()['r']))
                     action_value = {
                         's': transition.get_state(),
                         'a': transition.get_action(),
                         'r': value
                     }
-                if len(possible_transitions)>0:
+                if len(possible_transitions) > 0:
                     arr.append(action_value)
             print('this is the max val arr: ', arr)
             max_action_value = self.return_max_val(arr)
-            all_max_val = [v for v in arr if (v['r'] == max_action_value['r'])]  # nur zwecks visualisierung
+            all_max_val = [v for v in arr if round(v['r'] == max_action_value['r'])]  # nur zwecks visualisierung
             state.set_add_values(all_max_val)  #
             result.append(max_action_value)
 
@@ -391,13 +386,12 @@ class Mdp:
         for state in self.init_set_of_states:
             arr = []
             for tr in [t for t in self.init_set_of_transitions_probabilities_and_rewards if
-                       (t.get_state() == state) and t.get_prob()==0.8]:
+                       (t.get_state() == state) and t.get_prob() == 0.8]:
                 arr.append({
                     's': tr.get_state(),
                     'a': tr.get_action(),
                     'abs_val': tr.get_succ_state().get_value()['r']
                 })
-
 
             max_val = self.return_max_val_abs(arr)
 
@@ -418,12 +412,10 @@ class Mdp:
                 }
             )
 
-
-
     def get_states(self):
         return self.init_set_of_states
 
-    def set_environment(self,environment):
+    def set_environment(self, environment):
         self.init_set_of_states = self.create_set_of_states()
         self.init_state = {}
         self.cliff = []
@@ -433,16 +425,19 @@ class Mdp:
         self.init_set_of_transitions_probabilities = self.create_transition_probability()
         self.init_set_of_transitions_probabilities_and_rewards = self.create_transition_reward()
 
-    def __init__(self, size, gamma, policy, positive):
-        self.positive = positive
-        self.size = size
+    def set_size(self,size):
+        self.size=size
+
+
+    def __init__(self, size, gamma, policy):
+        self.size = int(size)
         self.gamma = gamma
         self.policy = policy
         self.init_set_of_states = self.create_set_of_states()
         self.init_state = {}
         self.cliff = []
         self.environment = 'grid-world'
-        self.init_set_of_actions = ['up', 'down', 'left', 'right','exit']
+        self.init_set_of_actions = ['up', 'down', 'left', 'right', 'exit']
         self.init_set_of_transitions = self.create_set_of_transitions()
         self.init_set_of_transitions_probabilities = self.create_transition_probability()
         self.init_set_of_transitions_probabilities_and_rewards = self.create_transition_reward()

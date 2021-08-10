@@ -1,79 +1,84 @@
 from tkinter import *
-import functools
 import numpy
+import numpy as np
 from matplotlib import pyplot as plt
-
 from mdp import Mdp
-from state import State
-
-canvas_width = 1460
-scale = 100
-size = 5
-xmdp1 = 0
-xmdp1 = 0
-padding = 25
-mdp_width = size * scale
-x_end_mdp1 = xmdp1 + mdp_width * 0.7
-xmdp2 = canvas_width - (mdp_width * 0.7)
-space = xmdp2 - x_end_mdp1 - 2 * padding
-xmdp3 = x_end_mdp1 + padding
-scale_mdp_3 = space / size
-
-gamma = 0.9
+import random
 
 
-def start_cliff_world(m1,m2,m3):
+def start_cliff_world(m1, m2, m3):
+    var_gamma_calc = int(var_gamma.get()) / 100
+    m1.__init__(int(var_size.get()), var_gamma_calc, [])
+    m2.__init__(int(var_size.get()), var_gamma_calc, [])
+    m3.__init__(int(var_size.get()), var_gamma_calc, [])
     m1.set_environment('cliff-world')
     m2.set_environment('cliff-world')
     m3.set_environment('cliff-world')
-    m1.set_start({'x': 3, 'y': 4})
-    # mdp1.set_end({'x': 3, 'y': 0})
-    m1.set_cliff([
-        {'x': 4, 'y': 0},
-        {'x': 4, 'y': 1},
-        {'x': 4, 'y': 2},
-        {'x': 4, 'y': 3},
-        {'x': 4, 'y': 4}
-    ]
-    )
-    #mdp1.set_solid_states([
-     #   {'x': 0, 'y': 0},
-      #  {'x': 0, 'y': 1},
-       # {'x': 0, 'y': 2},
-    #]
-    #)
-    # policy1 = mdp1.solve_mdp()
-    m2.set_start({'x': 3, 'y': 4})
-    m2.set_end({'x': 3, 'y': 0,'reward':1})
+    cliff = []
+    start = {'x': int(var_size.get()) - 2, 'y': int(var_size.get()) - 1}
+    end = {'x': int(var_size.get()) - 2, 'y': 0}
 
-    m3.set_start({'x': 3, 'y': 4})
-    m3.set_end({'x': 3, 'y': 0,'reward':1})
-    m3.set_cliff([
-        {'x': 4, 'y': 0},
-        {'x': 4, 'y': 1},
-        {'x': 4, 'y': 2},
-        {'x': 4, 'y': 3},
-        {'x': 4, 'y': 4}
-    ])
+    m1.set_start(start)
+
+    for i in range(int(var_size.get())):
+        cliff.append({
+            'x': int(var_size.get()) - 1,
+            'y': i
+        })
+    m1.set_cliff(cliff
+                 )
+
+    m2.set_start(start)
+    m2.set_end({'x': end['x'], 'y': end['y'], 'reward': 1})
+
+    m3.set_start(start)
+    m3.set_end({'x': end['x'], 'y': end['y'], 'reward': 1})
+    m3.set_cliff(cliff)
     m3.increment_iteration()
-    draw_graphs_and_policies(c,m1,m2,m3)
+    draw_graphs_and_policies(c1, c2, m1, m2, m3)
+
 
 def get_solid_states_for_deep_sea(end_state_arr):
     res = []
     for state in end_state_arr:
         i = state.get_y() + 1
-        while i < size:
-            res.append({'x':state.get_x(), 'y':i})
-            i +=1
+        while i < int(var_size.get()):
+            res.append({'x': state.get_x(), 'y': i})
+            i += 1
     return res
 
-def start_deep_sea_treasure(m1,m2,m3):
+def get_treasures_for_deep_sea():
+    var_size_calc = int(var_size.get())
+    result = [{
+        'x': 0,
+        'y': 1,
+        'reward': 1
+    }]
+    start_depth = 1
+    for i in range(var_size_calc-1):
+        x = i+1
+        random_step = random.choice(range(var_size_calc - start_depth))
+        y = start_depth + random_step
+        start_depth += random_step
+        result.append({
+            'x':x,
+            'y':y,
+            'reward':x*y*4
+        })
+    return result
+
+
+
+def start_deep_sea_treasure(m1, m2, m3):
+    var_gamma_calc = int(var_gamma.get()) / 100
+    m1.__init__(int(var_size.get()), var_gamma_calc, [])
+    m2.__init__(int(var_size.get()), var_gamma_calc, [])
+    m3.__init__(int(var_size.get()), var_gamma_calc, [])
     m1.set_environment('cliff-world')
-    m2.set_environment('cliff-world')
     m2.set_environment('cliff-world')
     m3.set_environment('cliff-world')
     m1.set_start({'x': 0, 'y': 0})
-    m1.set_end({'x': 4, 'y': 4,'reward':-1000})
+    m1.set_end({'x': int(var_size.get()) - 1, 'y': int(var_size.get()) - 1, 'reward': -1000})
     # mdp1.set_end({'x': 3, 'y': 0})
     # mdp1.set_solid_states([
     #   {'x': 0, 'y': 0},
@@ -82,28 +87,33 @@ def start_deep_sea_treasure(m1,m2,m3):
     # ]
     # )
     # policy1 = mdp1.solve_mdp()
+    treasures = get_treasures_for_deep_sea()
+
     m2.set_start({'x': 0, 'y': 0})
-    m2.set_end({'x': 0, 'y':1, 'reward': 3})
-    m2.set_end({'x': 1, 'y': 2, 'reward': 7})
-    m2.set_end({'x': 2, 'y': 2, 'reward': 14})
-    m2.set_end({'x': 3, 'y': 3, 'reward': 15})
-    m2.set_end({'x': 4, 'y': 4, 'reward': 20})
+    for treasure in treasures:
+        m2.set_end(treasure)
 
-
+  #  m2.set_end({'x': 0, 'y': 1, 'reward': 3})
+  #  m2.set_end({'x': 1, 'y': 2, 'reward': 7})
+  #  m2.set_end({'x': 2, 'y': 2, 'reward': 14})
+  #  m2.set_end({'x': 3, 'y': 3, 'reward': 15})
+  #  m2.set_end({'x': 4, 'y': 4, 'reward': 20})
 
     m3.set_start({'x': 0, 'y': 0})
-    m3.set_end({'x': 0, 'y': 1, 'reward': 3})
-    m3.set_end({'x': 1, 'y': 2, 'reward': 7})
-    m3.set_end({'x': 2, 'y': 2, 'reward': 14})
-    m3.set_end({'x': 3, 'y': 3, 'reward': 15})
-    m3.set_end({'x': 4, 'y': 4, 'reward': 20})
+    for treasure in treasures:
+        m3.set_end(treasure)
+  #  m3.set_end({'x': 0, 'y': 1, 'reward': 3})
+  #  m3.set_end({'x': 1, 'y': 2, 'reward': 7})
+  #  m3.set_end({'x': 2, 'y': 2, 'reward': 14})
+  #  m3.set_end({'x': 3, 'y': 3, 'reward': 15})
+  #  m3.set_end({'x': 4, 'y': 4, 'reward': 20})
 
     solidstates = get_solid_states_for_deep_sea([state for state in m2.get_states() if state.get_end()])
     mdp1.set_solid_states(solidstates)
     mdp2.set_solid_states(solidstates)
     mdp3.set_solid_states(solidstates)
     m3.increment_iteration()
-    draw_graphs_and_policies(c,m1,m2,m3)
+    draw_graphs_and_policies(c1, c2, m1, m2, m3)
     print('new enviroment chosen')
 
 
@@ -151,6 +161,8 @@ def validate_input(P):
         return False
 
 
+
+
 def draw_graph(c, x, y, scale, mdp):
     temp_init_state = {}
     end_states = []
@@ -164,14 +176,14 @@ def draw_graph(c, x, y, scale, mdp):
             end_states.append(s)
         else:
             draw_square(c, x + s.x * scale, y + s.y * scale, scale, scale, 'black')
-            c.create_text(x + s.x * scale + scale / 2, y + s.y * scale + scale / 2, text=round(s.get_value()['r'],3),
+            c.create_text(x + s.x * scale + scale / 2, y + s.y * scale + scale / 2, text=round(s.get_value()['r'], 3),
                           anchor='nw',
                           font='TkMenuFont', fill='black')
     draw_square(c, x + temp_init_state.get_x() * scale, y + temp_init_state.get_y() * scale, scale, scale, 'blue')
     c.create_text(x + temp_init_state.x * scale, y + temp_init_state.y * scale, text='Start', anchor='nw',
                   font='TkMenuFont', fill='blue')
     c.create_text(x + temp_init_state.x * scale + scale / 2, y + temp_init_state.y * scale + scale / 2,
-                  text=round(temp_init_state.get_value()['r'],3), anchor='nw',
+                  text=round(temp_init_state.get_value()['r'], 3), anchor='nw',
                   font='TkMenuFont', fill='black')
     for state in solid_states:
         c.create_rectangle(x + state.x * scale, y + state.y * scale, x + state.x * scale + scale,
@@ -196,26 +208,16 @@ def draw_graph(c, x, y, scale, mdp):
 
 def draw_policy(c, x, y, scale, set_of_states):
     for s in set_of_states:
-        for max_value in s.get_add_values():
-            draw_triangle(c, x + s.x * scale + 0.5 * scale, y + s.y * scale + 0.5 * scale, 0.5 * scale, 0.5 * scale,
-                          max_value['a'], s.value['r'], 'black')
+        if len(s.get_add_values()) < 4:
+            for max_value in s.get_add_values():
+                draw_triangle(c, x + s.x * scale + 0.5 * scale, y + s.y * scale + 0.5 * scale, 0.5 * scale, 0.5 * scale,
+                              max_value['a'], s.value['r'], 'black')
 
 
-def run_iteration(c,m1,m2,m3):
+def run_iteration(c1, c2, m1, m2, m3):
     m1.increment_iteration()
     m2.increment_iteration()
-    # mdp3.set_states(calc_lin_combination(mdp1.get_states(), mdp2.get_states(), mdp3.get_states(), int(v1.get()) / 100,
-    #                                     int(v2.get()) / 100))
-    # c.delete('all')
-    # draw_policy(c, xmdp1, 0, scale * 0.7, mdp1.get_states())
-    # draw_policy(c, xmdp2, 0, scale * 0.7, mdp2.get_states())
-    # draw_policy(c, xmdp3, 0, scale_mdp_3, mdp3.get_states())
-    # draw_graph(c, xmdp1, 0, scale * 0.7, mdp1)
-    # draw_graph(c, xmdp2, 0, scale * 0.7, mdp2)
-    # draw_graph(c, xmdp3, 0, scale_mdp_3, mdp3)
-    draw_graphs_and_policies(c,m1,m2,m3)
-
-
+    draw_graphs_and_policies(c1, c2, m1, m2, m3)
 
 
 def calc_lin_combination(mdp1, mdp2, mdp3, alpha):
@@ -240,49 +242,53 @@ def calc_lin_combination(mdp1, mdp2, mdp3, alpha):
     mdp3.set_states(new_states)
     mdp3.eval_policy()
     # mdp3.run_iteration()
-
+    print('combination finished')
     return mdp3.get_states()
 
 
-def solve_mds(c,m1,m2,m3):
-    mdp1.solve_mdp()
-    mdp2.solve_mdp()
-    draw_graphs_and_policies(c,m1,m2,m3)
+def solve_mds(c1, c2, m1, m2, m3):
+    mdp1.solve_mdp(var_size)
+    mdp2.solve_mdp(var_size)
+    draw_graphs_and_policies(c1, c2, m1, m2, m3)
 
 
-def draw_graphs_and_policies(c,mdp1n,mdp2n,mdp3n):
-    c.delete('all')
-    draw_policy(c, xmdp1, 0, scale * 0.7, mdp1n.get_states())
-    draw_policy(c, xmdp2, 0, scale * 0.7, mdp2n.get_states())
-    draw_policy(c, xmdp3, 0, scale_mdp_3, mdp3n.get_states())
-    draw_graph(c, xmdp1, 0, scale * 0.7, mdp1n)
-    draw_graph(c, xmdp2, 0, scale * 0.7, mdp2n)
-    draw_graph(c, xmdp3, 0, scale_mdp_3, mdp3n)
+def draw_graphs_and_policies(canvas1, canvas2, mdp1n, mdp2n, mdp3n):
+    ymdp2 = int(var_size.get()) * scale * 0.7 + padding
+    c1.delete('all')
+    c2.delete('all')
+    draw_policy(canvas1, xmdp1, ymdp1, scale * 0.7, mdp1n.get_states())
+    draw_policy(canvas1, xmdp2, ymdp2, scale * 0.7, mdp2n.get_states())
+    draw_policy(canvas2, xmdp3, ymdp3, scale * 0.7, mdp3n.get_states())
+    draw_graph(canvas1, xmdp1, ymdp1, scale * 0.7, mdp1n)
+    draw_graph(canvas1, xmdp2, ymdp2, scale * 0.7, mdp2n)
+    draw_graph(canvas2, xmdp3, ymdp3, scale * 0.7, mdp3n)
+    render_scrollbars(canvas1,canvas2)
 
 
-def run_multi_safe_alg(c, input,m1,m2,m3):
-    m1.solve_mdp()
-    m2.solve_mdp()
+def run_multi_safe_alg(c1, c2, input, m1, m2, m3):
+    m1.solve_mdp(var_size)
+    m2.solve_mdp(var_size)
     m3.set_states(calc_lin_combination(m1, m2, m3, input / 100))
-    #mdp3.eval_policy()
-    draw_graphs_and_policies(c,m1,m2,m3)
+    # mdp3.eval_policy()
+    draw_graphs_and_policies(c1, c2, m1, m2, m3)
 
 
-def accu_reward(c,m1,m2,m3):
+def accu_reward(c1, c2, m1, m2, m3):
     mdp1_data = []
     mdp2_data = []
     sum_data = []
     episode_data = []
-    mdp1.solve_mdp()
-    mdp2.solve_mdp()
-    c.delete('all')
+    mdp1.solve_mdp(var_size)
+    mdp2.solve_mdp(var_size)
+    c1.delete('all')
+    c2.delete('all')
 
     for x in range(0, 110, 10):
         m3.set_states(calc_lin_combination(mdp1, mdp2, mdp3, x / 100))
         # mdp3.run_iteration()
         m3.eval_policy()
         #    if x>0 and x<100:
-        episode_data.append(run_episode(c))
+        episode_data.append(run_episode(c1, c2))
 
         reward_mdp1 = m1.return_start().get_value()['r'] * (x / 100)
         reward_mdp2 = m2.return_start().get_value()['r'] * (1 - (x / 100))
@@ -294,7 +300,7 @@ def accu_reward(c,m1,m2,m3):
         print('final reward mdp1 for alpha ' + str(x), reward_mdp1)
         print('final reward mdp2 for alpha ' + str(x), reward_mdp2)
 
-    draw_graphs_and_policies(c,m1,m2,m3)
+    draw_graphs_and_policies(c1, c2, m1, m2, m3)
 
     # mdp3.print_prob()
     fig = plt.figure()
@@ -304,7 +310,7 @@ def accu_reward(c,m1,m2,m3):
     plt.show()
 
 
-def run_episode(c):
+def run_episode(c1, c2):
     pos_count = 0
     neg_count = 0
     pos_reward = []
@@ -320,7 +326,8 @@ def run_episode(c):
             neg_count += 1
             count.append(res['iteration'])
             neg_reward.append(res['discounted_reward'])
-    print('this is 1000 count', count)
+    # print('this is 1000 count', count)
+    print('mean and median pos', np.mean(pos_reward), np.median(pos_reward))
     return {
         'pos': pos_count,
         'neg': neg_count,
@@ -378,68 +385,129 @@ def plot_graph(mdp1_data, mdp2_data, sum, episode_data, fig):
     # ax1.scatter(x, sum, s=10, c='g', marker="o", label='both')
     plt.legend(loc='lower left')
 
-def environment_change_event(m1,m2,m3):
-    print('environment changed: ',env_option.get())
+
+def environment_change_event(m1, m2, m3):
+    print('environment changed: ', env_option.get())
     option = env_option.get()
     if option == 'cliff-world':
-        start_cliff_world(m1,m2,m3)
+        start_cliff_world(m1, m2, m3)
     if option == 'deep-sea-treasure':
-        start_deep_sea_treasure(m1,m2,m3)
+        start_deep_sea_treasure(m1, m2, m3)
+
+
+def render_scrollbars(canvas1,canvas2):
+    #canvas_frame.forget()
+    scroll_x = Scrollbar(canvas_frame, orient="horizontal", command=canvas1.xview)
+    scroll_x.grid(row=2, column=0, sticky="ew")
+    scroll_y = Scrollbar(canvas_frame, orient="vertical", command=canvas1.yview)
+    scroll_y.grid(row=1, column=2, sticky="ns")
+
+    canvas1.configure(yscrollcommand=scroll_y.set, xscrollcommand=scroll_x.set)
+    canvas1.bind('<Configure>', lambda e: canvas1.configure(scrollregion=canvas1.bbox("all")))
+    #canvas_frame_2.forget()
+    scroll_x_2 = Scrollbar(canvas_frame_2, orient="horizontal", command=canvas2.xview)
+    scroll_x_2.grid(row=2, column=1, sticky="ew")
+    scroll_y_2 = Scrollbar(canvas_frame_2, orient="vertical", command=canvas2.yview)
+    scroll_y_2.grid(row=1, column=2, sticky="ns")
+
+    canvas2.configure(yscrollcommand=scroll_y_2.set, xscrollcommand=scroll_x_2.set)
+    canvas2.bind('<Configure>', lambda e: canvas2.configure(scrollregion=canvas2.bbox("all")))
+
 
 if __name__ == '__main__':
-    mdp1 = Mdp(size, gamma, [], False)
-    mdp2 = Mdp(size, gamma, [], True)
-    mdp3 = Mdp(size, gamma, [], True)
     top = Tk()
-
-   # stvar = StringVar()
-   # stvar.set("one")
-
-    env_options = ['cliff-world','deep-sea-treasure']
-    env_option = StringVar(value=env_options[0])
-    #env_option.set(env_options[0])  # the first value
-    env_option.trace("w", lambda name, index, mode, sv=env_option: environment_change_event(mdp1,mdp2,mdp3))
-
-    c = Canvas(top, width=canvas_width, height=1000, background='white')
-    c.grid(row=1, column=0)
-
     frame = Frame(top)
-    frame.grid(row=0, column=0, sticky="n")
+    frame.grid(row=0, column=0, sticky="w", padx=(10, 0))
 
-    label1 = Label(frame, text="coefficient").grid(row=1, column=1, sticky="nw")
-    label2 = Label(frame, text="alpha").grid(row=2, column=0, sticky="w")
+    scale = 100
+    #size = 5
+    var_size = StringVar(frame, value=5)
+    xmdp1 = 0
+    xmdp2 = 0
+    padding = 25
+    ymdp1 = 0
+    ymdp3 = 0
+    xmdp3 = 0
+    scale_mdp_3 = 500 / int(var_size.get())
+
+    gamma = 0.9
+    mdp1 = Mdp(var_size.get(), gamma, [])
+    mdp2 = Mdp(var_size.get(), gamma, [])
+    mdp3 = Mdp(var_size.get(), gamma, [])
+    var_alpha = StringVar(frame, value='0')
+    var_alpha.trace("w", lambda name, index, mode, sv=var_alpha: run_multi_safe_alg(c1, c2, int(var_alpha.get()), mdp1,
+                                                                                    mdp2, mdp3))
+    var_gamma = StringVar(frame, value='90')
+    var_gamma.trace("w",
+                    lambda name, index, mode, sv=var_gamma: environment_change_event(mdp1, mdp2, mdp3))
+
+
+    # stvar = StringVar()
+    # stvar.set("one")
+
+    env_options = ['cliff-world', 'deep-sea-treasure']
+    env_option = StringVar(value=env_options[0])
+    # env_option.set(env_options[0])  # the first value
+    env_option.trace("w", lambda name, index, mode, sv=env_option: environment_change_event(mdp1, mdp2, mdp3))
+
+    canvas_frame = Frame(top)
+    canvas_frame.grid(row=1, column=0, padx=(10, 0))
+    c1 = Canvas(canvas_frame, width=700, height=500, background='white')
+    c1.grid(row=1, column=0)
+
+    canvas_frame_2 = Frame(top)
+    canvas_frame_2.grid(row=1, column=1)
+    c2 = Canvas(canvas_frame_2, width=700, height=500, background='white')
+    c2.grid(row=1, column=1)
+
+    render_scrollbars(c1,c2)
+
+    label_var = Label(frame, text="value").grid(row=1, column=1, sticky="nw")
+    label_val = Label(frame, text="variable").grid(row=1, column=0, sticky="nw")
+
+    label_alpha = Label(frame, text="alpha").grid(row=2, column=0, sticky="w")
+    label_gamma = Label(frame, text="gamma").grid(row=3, column=0, sticky="w")
+    label_size = Label(frame, text="size").grid(row=4, column=0, sticky="w")
 
     validation = (frame.register(validate_input))
-    v1 = StringVar(frame, value='0')
 
-    e1 = Entry(frame, validate='all', textvariable=v1, validatecommand=(validation, '%P')).grid(row=2, column=1,
-                                                                                                sticky=E + W)
+
+    e1 = Entry(frame, validate='all', textvariable=var_alpha, validatecommand=(validation, '%P')).grid(row=2, column=1,
+                                                                                                       sticky=E + W)
+
+    e2 = Entry(frame, validate='all', textvariable=var_gamma, validatecommand=(validation, '%P')).grid(row=3, column=1,
+                                                                                                       sticky=E + W)
+
+    e3 = Entry(frame, validate='all', textvariable=var_size, validatecommand=(validation, '%P')).grid(row=4,
+                                                                                                      column=1,
+                                                                                                      sticky=E + W)
+    be3 = Button(frame, text="resize Mdp's",
+                 command=lambda: environment_change_event(mdp1, mdp2, mdp3),
+                 activeforeground="red", activebackground="pink", pady=10).grid(row=4, column=2, sticky="we")
 
     b1 = Button(frame, text="Solve Mdps",
-                command=lambda: solve_mds(c,mdp1,mdp2,mdp3),
-                activeforeground="red", activebackground="pink", pady=10).grid(row=3, column=0, sticky="we")
+                command=lambda: solve_mds(c1, c2, mdp1, mdp2, mdp3),
+                activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=0, sticky="we")
     b2 = Button(frame, text="Linear Combination",
-                command=lambda: run_multi_safe_alg(c, int(v1.get()),mdp1,mdp2,mdp3),
-                activeforeground="red", activebackground="pink", pady=10).grid(row=3, column=1, sticky="we")
+                command=lambda: run_multi_safe_alg(c1, c2, int(var_alpha.get()), mdp1, mdp2, mdp3),
+                activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=1, sticky="we")
     b3 = Button(frame, text="Increment Iteration",
-                command=lambda: run_iteration(c,mdp1,mdp2,mdp3),
-                activeforeground="red", activebackground="pink", pady=10).grid(row=3, column=2, sticky="we")
+                command=lambda: run_iteration(c1, c2, mdp1, mdp2, mdp3),
+                activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=4, sticky="we")
     b4 = Button(frame, text="Accu reward",
-                command=lambda: accu_reward(c,mdp1,mdp2,mdp3),
-                activeforeground="red", activebackground="pink", pady=10).grid(row=3, column=3, sticky="we")
+                command=lambda: accu_reward(c1, c2, mdp1, mdp2, mdp3),
+                activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=2, sticky="we")
     b5 = Button(frame, text="run episode",
-                command=lambda: run_episode(c),
-                activeforeground="red", activebackground="pink", pady=10).grid(row=3, column=4, sticky="we")
-    w = OptionMenu(frame, env_option, *env_options).grid(row=0,column=1)
-
-
-
+                command=lambda: run_episode(c1, c2),
+                activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=3, sticky="we")
+    w = OptionMenu(frame, env_option, *env_options).grid(row=0, column=1)
 
     # These are the titles
     l1 = Label(frame, text='Select environment', width=15)
     l1.grid(row=0, column=0)
-    start_cliff_world(mdp1,mdp2,mdp3)
-    run_iteration(c, mdp1, mdp2, mdp3)
-    #draw_graphs_and_policies(c)
-
+    start_cliff_world(mdp1, mdp2, mdp3)
+    run_iteration(c1, c2, mdp1, mdp2, mdp3)
+    # draw_graphs_and_policies(c)
     top.mainloop()
+
+
