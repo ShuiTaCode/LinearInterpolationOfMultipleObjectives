@@ -47,6 +47,7 @@ def get_solid_states_for_deep_sea(end_state_arr):
             i += 1
     return res
 
+
 def get_treasures_for_deep_sea():
     var_size_calc = int(var_size.get())
     result = [{
@@ -55,18 +56,17 @@ def get_treasures_for_deep_sea():
         'reward': 1
     }]
     start_depth = 1
-    for i in range(var_size_calc-1):
-        x = i+1
+    for i in range(var_size_calc - 1):
+        x = i + 1
         random_step = random.choice(range(var_size_calc - start_depth))
         y = start_depth + random_step
         start_depth += random_step
         result.append({
-            'x':x,
-            'y':y,
-            'reward':x*y*4
+            'x': x,
+            'y': y,
+            'reward': x * y * 4
         })
     return result
-
 
 
 def start_deep_sea_treasure(m1, m2, m3):
@@ -79,34 +79,16 @@ def start_deep_sea_treasure(m1, m2, m3):
     m3.set_environment('cliff-world')
     m1.set_start({'x': 0, 'y': 0})
     m1.set_end({'x': int(var_size.get()) - 1, 'y': int(var_size.get()) - 1, 'reward': -1000})
-    # mdp1.set_end({'x': 3, 'y': 0})
-    # mdp1.set_solid_states([
-    #   {'x': 0, 'y': 0},
-    #  {'x': 0, 'y': 1},
-    # {'x': 0, 'y': 2},
-    # ]
-    # )
-    # policy1 = mdp1.solve_mdp()
+
     treasures = get_treasures_for_deep_sea()
 
     m2.set_start({'x': 0, 'y': 0})
     for treasure in treasures:
         m2.set_end(treasure)
 
-  #  m2.set_end({'x': 0, 'y': 1, 'reward': 3})
-  #  m2.set_end({'x': 1, 'y': 2, 'reward': 7})
-  #  m2.set_end({'x': 2, 'y': 2, 'reward': 14})
-  #  m2.set_end({'x': 3, 'y': 3, 'reward': 15})
-  #  m2.set_end({'x': 4, 'y': 4, 'reward': 20})
-
     m3.set_start({'x': 0, 'y': 0})
     for treasure in treasures:
         m3.set_end(treasure)
-  #  m3.set_end({'x': 0, 'y': 1, 'reward': 3})
-  #  m3.set_end({'x': 1, 'y': 2, 'reward': 7})
-  #  m3.set_end({'x': 2, 'y': 2, 'reward': 14})
-  #  m3.set_end({'x': 3, 'y': 3, 'reward': 15})
-  #  m3.set_end({'x': 4, 'y': 4, 'reward': 20})
 
     solidstates = get_solid_states_for_deep_sea([state for state in m2.get_states() if state.get_end()])
     mdp1.set_solid_states(solidstates)
@@ -125,32 +107,41 @@ def draw_square(c, x, y, w, h, color):
 
 
 def draw_triangle(c, x, y, w, h, action, reward, color):
-    half = 0.3
-    blibla = 15
+    stetch_width = 0.5  # stretch and compress in width of arrow
+    delta = 30  # distance from the center of the square
+    stretch_height = 0.5  # stretch and compress in height of arrow
     if reward < 999:
         if action == 'up':
-            c.create_line(x, y - blibla, x + half * w, y - blibla, fill=color, width=3)
-            c.create_line(x + half * w, y - blibla, x, y - half * h - blibla, fill=color, width=3)
-            c.create_line(x, y - half * h - blibla, x - half * w, y - blibla, fill=color, width=3)
-            c.create_line(x - half * w, y - blibla, x, y - blibla, fill=color, width=3)
+            c.create_line(x, y - delta, x + stetch_width * w, y - delta, fill=color, width=3)
+            c.create_line(x + stetch_width * w, y - delta, x, y - stetch_width * h * stretch_height - delta, fill=color,
+                          width=3)
+            c.create_line(x, y - stetch_width * h * stretch_height - delta, x - stetch_width * w, y - delta, fill=color,
+                          width=3)
+            c.create_line(x - stetch_width * w, y - delta, x, y - delta, fill=color, width=3)
             return
         if action == 'down':
-            c.create_line(x, y + blibla, x + half * w, y + blibla, fill=color, width=3)
-            c.create_line(x + half * w, y + blibla, x, y + half * h + blibla, fill=color, width=3)
-            c.create_line(x, y + half * h + blibla, x - half * w, y + blibla, fill=color, width=3)
-            c.create_line(x - half * w, y + blibla, x, y + blibla, fill=color, width=3)
+            c.create_line(x, y + delta, x + stetch_width * w, y + delta, fill=color, width=3)
+            c.create_line(x + stetch_width * w, y + delta, x, y + stetch_width * h * stretch_height + delta, fill=color,
+                          width=3)
+            c.create_line(x, y + stetch_width * h * stretch_height + delta, x - stetch_width * w, y + delta, fill=color,
+                          width=3)
+            c.create_line(x - stetch_width * w, y + delta, x, y + delta, fill=color, width=3)
             return
         if action == 'left':
-            c.create_line(x - blibla, y, x - blibla, y - half * h, fill=color, width=3)
-            c.create_line(x - blibla, y - half * h, x - blibla - half * w, y, fill=color, width=3)
-            c.create_line(x - half * w - blibla, y, x - blibla, y + half * h, fill=color, width=3)
-            c.create_line(x - blibla, y + half * h, x - blibla, y, fill=color, width=3)
+            c.create_line(x - delta, y, x - delta, y - stetch_width * h, fill=color, width=3)
+            c.create_line(x - delta, y - stetch_width * h, x - delta - stetch_width * w * stretch_height, y, fill=color,
+                          width=3)
+            c.create_line(x - stetch_width * w * stretch_height - delta, y, x - delta, y + stetch_width * h, fill=color,
+                          width=3)
+            c.create_line(x - delta, y + stetch_width * h, x - delta, y, fill=color, width=3)
             return
         if action == 'right':
-            c.create_line(x + blibla, y, x + blibla, y - half * h, fill=color, width=3)
-            c.create_line(x + blibla, y - half * h, x + half * w + blibla, y, fill=color, width=3)
-            c.create_line(x + half * w + blibla, y, x + blibla, y + half * h, fill=color, width=3)
-            c.create_line(x + blibla, y + half * h, x + blibla, y, fill=color, width=3)
+            c.create_line(x + delta, y, x + delta, y - stetch_width * h, fill=color, width=3)
+            c.create_line(x + delta, y - stetch_width * h, x + stetch_width * w * stretch_height + delta, y, fill=color,
+                          width=3)
+            c.create_line(x + stetch_width * w * stretch_height + delta, y, x + delta, y + stetch_width * h, fill=color,
+                          width=3)
+            c.create_line(x + delta, y + stetch_width * h, x + delta, y, fill=color, width=3)
             return
 
 
@@ -159,8 +150,6 @@ def validate_input(P):
         return True
     else:
         return False
-
-
 
 
 def draw_graph(c, x, y, scale, mdp):
@@ -174,17 +163,15 @@ def draw_graph(c, x, y, scale, mdp):
             temp_init_state = s
         elif s.get_end() or mdp.part_of_cliff(s):
             end_states.append(s)
-        else:
-            draw_square(c, x + s.x * scale, y + s.y * scale, scale, scale, 'black')
-            c.create_text(x + s.x * scale + scale / 2, y + s.y * scale + scale / 2, text=round(s.get_value()['r'], 3),
-                          anchor='nw',
-                          font='TkMenuFont', fill='black')
+
+        draw_square(c, x + s.x * scale, y + s.y * scale, scale, scale, 'black')
+        c.create_text(x + s.x * scale + scale / 3, y + s.y * scale + scale / 2, text=round(s.get_value()['r'], 3),
+                      anchor='nw',
+                      font='TkMenuFont', fill='black')
     draw_square(c, x + temp_init_state.get_x() * scale, y + temp_init_state.get_y() * scale, scale, scale, 'blue')
     c.create_text(x + temp_init_state.x * scale, y + temp_init_state.y * scale, text='Start', anchor='nw',
                   font='TkMenuFont', fill='blue')
-    c.create_text(x + temp_init_state.x * scale + scale / 2, y + temp_init_state.y * scale + scale / 2,
-                  text=round(temp_init_state.get_value()['r'], 3), anchor='nw',
-                  font='TkMenuFont', fill='black')
+
     for state in solid_states:
         c.create_rectangle(x + state.x * scale, y + state.y * scale, x + state.x * scale + scale,
                            y + state.y * scale + scale, fill="grey", outline='black')
@@ -201,9 +188,9 @@ def draw_graph(c, x, y, scale, mdp):
                           font='TkMenuFont', fill='red')
         # draw_square(c, x + temp_end_state.x * scale, y + temp_end_state.y * scale, scale, scale, 'green')
 
-        c.create_text(x + temp_end_state.x * scale + scale / 2, y + temp_end_state.y * scale + scale / 2,
-                      text=temp_end_state.get_value()['r'], anchor='nw',
-                      font='TkMenuFont', fill='black')
+    # c.create_text(x + temp_end_state.x * scale + scale / 2, y + temp_end_state.y * scale + scale / 2,
+    #              text=temp_end_state.get_value()['r'], anchor='nw',
+    #             font='TkMenuFont', fill='black')
 
 
 def draw_policy(c, x, y, scale, set_of_states):
@@ -211,7 +198,7 @@ def draw_policy(c, x, y, scale, set_of_states):
         if len(s.get_add_values()) < 4:
             for max_value in s.get_add_values():
                 draw_triangle(c, x + s.x * scale + 0.5 * scale, y + s.y * scale + 0.5 * scale, 0.5 * scale, 0.5 * scale,
-                              max_value['a'], s.value['r'], 'black')
+                              max_value['a'], s.value['r'], 'grey')
 
 
 def run_iteration(c1, c2, m1, m2, m3):
@@ -230,8 +217,8 @@ def calc_lin_combination(mdp1, mdp2, mdp3, alpha):
         new_state = mdp3_states[i]
         new_value = {'a': new_state.get_value()['a'],
                      'r': mdp1_states[i].get_value()['r'] * alpha + mdp2_states[i].get_value()['r'] * (1 - alpha)}
-        if not new_state.get_end() and not mdp3.part_of_cliff(new_state):
-            new_state.set_value(new_value)
+        # if not new_state.get_end() and not mdp3.part_of_cliff(new_state):
+        new_state.set_value(new_value)
 
         # if mdp1_states[i].get_end() or mdp2_states[i].get_end():
         #   new_state.set_end(True)
@@ -262,7 +249,7 @@ def draw_graphs_and_policies(canvas1, canvas2, mdp1n, mdp2n, mdp3n):
     draw_graph(canvas1, xmdp1, ymdp1, scale * 0.7, mdp1n)
     draw_graph(canvas1, xmdp2, ymdp2, scale * 0.7, mdp2n)
     draw_graph(canvas2, xmdp3, ymdp3, scale * 0.7, mdp3n)
-    render_scrollbars(canvas1,canvas2)
+    render_scrollbars(canvas1, canvas2)
 
 
 def run_multi_safe_alg(c1, c2, input, m1, m2, m3):
@@ -282,23 +269,23 @@ def accu_reward(c1, c2, m1, m2, m3):
     mdp2.solve_mdp(var_size)
     c1.delete('all')
     c2.delete('all')
-
-    for x in range(0, 110, 10):
-        m3.set_states(calc_lin_combination(mdp1, mdp2, mdp3, x / 100))
+    alpha = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,1.00]
+    for x in alpha:
+        m3.set_states(calc_lin_combination(mdp1, mdp2, mdp3, x))
         # mdp3.run_iteration()
-        m3.eval_policy()
+        # m3.eval_policy()
         #    if x>0 and x<100:
         episode_data.append(run_episode(c1, c2))
 
-        reward_mdp1 = m1.return_start().get_value()['r'] * (x / 100)
-        reward_mdp2 = m2.return_start().get_value()['r'] * (1 - (x / 100))
+        reward_mdp1 = m1.return_start().get_value()['r'] * x
+        reward_mdp2 = m2.return_start().get_value()['r'] * (1 - x)
         sum = reward_mdp1 + reward_mdp2
 
         mdp1_data.append(reward_mdp1)
         mdp2_data.append(reward_mdp2)
         sum_data.append(sum)
-        print('final reward mdp1 for alpha ' + str(x), reward_mdp1)
-        print('final reward mdp2 for alpha ' + str(x), reward_mdp2)
+        # print('final reward mdp1 for alpha ' + str(x), reward_mdp1)
+        # print('final reward mdp2 for alpha ' + str(x), reward_mdp2)
 
     draw_graphs_and_policies(c1, c2, m1, m2, m3)
 
@@ -316,7 +303,7 @@ def run_episode(c1, c2):
     pos_reward = []
     neg_reward = []
     count = []
-    for i in range(1000):
+    for i in range(50):
         res = mdp3.run_episode()
         if res['success']:
             pos_count += 1
@@ -327,6 +314,10 @@ def run_episode(c1, c2):
             count.append(res['iteration'])
             neg_reward.append(res['discounted_reward'])
     # print('this is 1000 count', count)
+    mean_pos = np.mean(pos_reward)
+    median_pos = np.median(pos_reward)
+    mean_neg = np.mean(neg_reward)
+    median_neg = np.median(neg_reward)
     print('mean and median pos', np.mean(pos_reward), np.median(pos_reward))
     return {
         'pos': pos_count,
@@ -338,7 +329,7 @@ def run_episode(c1, c2):
 
 
 def plot_episode_count(episode_data, fig):
-    x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,1.00]
     count = []
     for episode in episode_data:
         count.append(numpy.median(episode['count']))
@@ -350,7 +341,7 @@ def plot_episode_count(episode_data, fig):
 
 
 def plot_episode_graph(episode_data, fig):
-    x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,1.00]
     pos = []
     neg = []
     for episode in episode_data:
@@ -365,25 +356,25 @@ def plot_episode_graph(episode_data, fig):
 
 
 def plot_graph(mdp1_data, mdp2_data, sum, episode_data, fig):
-    print('what is episode_data', episode_data)
+    # print('what is episode_data', episode_data)
 
     pos_data = []
     neg_data = []
     for episode in episode_data:
-        pos_data.append(numpy.median(episode['pos_reward']))
-        neg_data.append(numpy.median(episode['neg_reward']))
+        pos_data.append(numpy.mean(episode['pos_reward']))
+        neg_data.append(numpy.mean(episode['neg_reward']))
 
-    x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,1.00]
     # print('size',len(mdp1_data),len(mdp2_data),len(x))
     # fig = plt.figure()
     ax1 = fig.add_subplot(221)
 
-    ax1.scatter(x, mdp1_data, s=10, c='b', marker="o", label='left Mdp')
-    ax1.scatter(x, mdp2_data, s=10, c='r', marker="o", label='right Mdp')
-    ax1.scatter(x, pos_data, s=10, c='#ff474c', marker="s", label='pos_data Mdp')
-    ax1.scatter(x, neg_data, s=10, c='#add8e6', marker="s", label='neg_data Mdp')
+    ax1.scatter(x, mdp2_data, s=10, c='b', marker="o", label='right Mdp')
+    ax1.scatter(x, pos_data, s=10, c='#add8e6', marker="s", label='pos_data Mdp')
+    ax1.scatter(x, mdp1_data, s=10, c='r', marker="o", label='left Mdp')
+    ax1.scatter(x, neg_data, s=10, c='#f7a6a8', marker="s", label='neg_data Mdp')
     # ax1.scatter(x, sum, s=10, c='g', marker="o", label='both')
-    plt.legend(loc='lower left')
+    plt.legend(loc='upper right')
 
 
 def environment_change_event(m1, m2, m3):
@@ -395,8 +386,8 @@ def environment_change_event(m1, m2, m3):
         start_deep_sea_treasure(m1, m2, m3)
 
 
-def render_scrollbars(canvas1,canvas2):
-    #canvas_frame.forget()
+def render_scrollbars(canvas1, canvas2):
+    # canvas_frame.forget()
     scroll_x = Scrollbar(canvas_frame, orient="horizontal", command=canvas1.xview)
     scroll_x.grid(row=2, column=0, sticky="ew")
     scroll_y = Scrollbar(canvas_frame, orient="vertical", command=canvas1.yview)
@@ -404,7 +395,7 @@ def render_scrollbars(canvas1,canvas2):
 
     canvas1.configure(yscrollcommand=scroll_y.set, xscrollcommand=scroll_x.set)
     canvas1.bind('<Configure>', lambda e: canvas1.configure(scrollregion=canvas1.bbox("all")))
-    #canvas_frame_2.forget()
+    # canvas_frame_2.forget()
     scroll_x_2 = Scrollbar(canvas_frame_2, orient="horizontal", command=canvas2.xview)
     scroll_x_2.grid(row=2, column=1, sticky="ew")
     scroll_y_2 = Scrollbar(canvas_frame_2, orient="vertical", command=canvas2.yview)
@@ -419,8 +410,8 @@ if __name__ == '__main__':
     frame = Frame(top)
     frame.grid(row=0, column=0, sticky="w", padx=(10, 0))
 
-    scale = 100
-    #size = 5
+    scale = 120
+    # size = 5
     var_size = StringVar(frame, value=5)
     xmdp1 = 0
     xmdp2 = 0
@@ -441,7 +432,6 @@ if __name__ == '__main__':
     var_gamma.trace("w",
                     lambda name, index, mode, sv=var_gamma: environment_change_event(mdp1, mdp2, mdp3))
 
-
     # stvar = StringVar()
     # stvar.set("one")
 
@@ -460,7 +450,7 @@ if __name__ == '__main__':
     c2 = Canvas(canvas_frame_2, width=700, height=500, background='white')
     c2.grid(row=1, column=1)
 
-    render_scrollbars(c1,c2)
+    render_scrollbars(c1, c2)
 
     label_var = Label(frame, text="value").grid(row=1, column=1, sticky="nw")
     label_val = Label(frame, text="variable").grid(row=1, column=0, sticky="nw")
@@ -470,7 +460,6 @@ if __name__ == '__main__':
     label_size = Label(frame, text="size").grid(row=4, column=0, sticky="w")
 
     validation = (frame.register(validate_input))
-
 
     e1 = Entry(frame, validate='all', textvariable=var_alpha, validatecommand=(validation, '%P')).grid(row=2, column=1,
                                                                                                        sticky=E + W)
@@ -509,5 +498,3 @@ if __name__ == '__main__':
     run_iteration(c1, c2, mdp1, mdp2, mdp3)
     # draw_graphs_and_policies(c)
     top.mainloop()
-
-

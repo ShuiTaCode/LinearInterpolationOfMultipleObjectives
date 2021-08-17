@@ -31,7 +31,7 @@ class State:
         return self.value
 
     def set_value(self, value):
-        self.value = {'a': value['a'],'r':round(value['r'], 10)}
+        self.value = {'a': value['a'],'r':value['r']}
     def set_add_values(self,add_values):
        # print('same value for a state, ',add_values)
         self.add_values=add_values
