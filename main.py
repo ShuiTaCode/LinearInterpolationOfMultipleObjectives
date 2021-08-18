@@ -6,14 +6,16 @@ from mdp import Mdp
 import random
 
 
-def start_cliff_world(m1, m2, m3):
+def start_cliff_world(m1, m2, m3,m4):
     var_gamma_calc = int(var_gamma.get()) / 100
     m1.__init__(int(var_size.get()), var_gamma_calc, [])
     m2.__init__(int(var_size.get()), var_gamma_calc, [])
     m3.__init__(int(var_size.get()), var_gamma_calc, [])
+    m4.__init__(int(var_size.get()), var_gamma_calc, [])
     m1.set_environment('cliff-world')
     m2.set_environment('cliff-world')
     m3.set_environment('cliff-world')
+    m4.set_environment('cliff-world')
     cliff = []
     start = {'x': int(var_size.get()) - 2, 'y': int(var_size.get()) - 1}
     end = {'x': int(var_size.get()) - 2, 'y': 0}
@@ -34,8 +36,15 @@ def start_cliff_world(m1, m2, m3):
     m3.set_start(start)
     m3.set_end({'x': end['x'], 'y': end['y'], 'reward': 1})
     m3.set_cliff(cliff)
+
+    m4.set_start(start)
+    m4.set_end({'x': end['x'], 'y': end['y'], 'reward': 1})
+    m4.set_cliff(cliff)
+
+
     m3.increment_iteration()
-    draw_graphs_and_policies(c1, c2, m1, m2, m3)
+    m4.increment_iteration()
+    draw_graphs_and_policies(c1, c2, m1, m2, m3,m4)
 
 
 def get_solid_states_for_deep_sea(end_state_arr):
@@ -201,10 +210,11 @@ def draw_policy(c, x, y, scale, set_of_states):
                               max_value['a'], s.value['r'], 'grey')
 
 
-def run_iteration(c1, c2, m1, m2, m3):
+def run_iteration(c1, c2, m1, m2, m3,m4):
     m1.increment_iteration()
     m2.increment_iteration()
-    draw_graphs_and_policies(c1, c2, m1, m2, m3)
+    m4.increment_iteration()
+    draw_graphs_and_policies(c1, c2, m1, m2, m3,m4)
 
 
 def calc_lin_combination(mdp1, mdp2, mdp3, alpha):
@@ -239,25 +249,29 @@ def solve_mds(c1, c2, m1, m2, m3):
     draw_graphs_and_policies(c1, c2, m1, m2, m3)
 
 
-def draw_graphs_and_policies(canvas1, canvas2, mdp1n, mdp2n, mdp3n):
+def draw_graphs_and_policies(canvas1, canvas2, mdp1n, mdp2n, mdp3n,mdp4n):
     ymdp2 = int(var_size.get()) * scale * 0.7 + padding
     c1.delete('all')
     c2.delete('all')
+    h=500
     draw_policy(canvas1, xmdp1, ymdp1, scale * 0.7, mdp1n.get_states())
     draw_policy(canvas1, xmdp2, ymdp2, scale * 0.7, mdp2n.get_states())
     draw_policy(canvas2, xmdp3, ymdp3, scale * 0.7, mdp3n.get_states())
+    draw_policy(canvas2, xmdp3, ymdp3 + h, scale * 0.7, mdp4n.get_states())
+
     draw_graph(canvas1, xmdp1, ymdp1, scale * 0.7, mdp1n)
     draw_graph(canvas1, xmdp2, ymdp2, scale * 0.7, mdp2n)
     draw_graph(canvas2, xmdp3, ymdp3, scale * 0.7, mdp3n)
+    draw_graph(canvas2, xmdp3, ymdp3 + h, scale * 0.7, mdp4n)
     render_scrollbars(canvas1, canvas2)
 
 
-def run_multi_safe_alg(c1, c2, input, m1, m2, m3):
+def run_multi_safe_alg(c1, c2, input, m1, m2, m3,m4):
     m1.solve_mdp(var_size)
     m2.solve_mdp(var_size)
     m3.set_states(calc_lin_combination(m1, m2, m3, input / 100))
     # mdp3.eval_policy()
-    draw_graphs_and_policies(c1, c2, m1, m2, m3)
+    draw_graphs_and_policies(c1, c2, m1, m2, m3,m4)
 
 
 def accu_reward(c1, c2, m1, m2, m3):
@@ -269,7 +283,7 @@ def accu_reward(c1, c2, m1, m2, m3):
     mdp2.solve_mdp(var_size)
     c1.delete('all')
     c2.delete('all')
-    alpha = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,1.00]
+    alpha = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.00]
     for x in alpha:
         m3.set_states(calc_lin_combination(mdp1, mdp2, mdp3, x))
         # mdp3.run_iteration()
@@ -329,7 +343,7 @@ def run_episode(c1, c2):
 
 
 def plot_episode_count(episode_data, fig):
-    x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,1.00]
+    x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.00]
     count = []
     for episode in episode_data:
         count.append(numpy.median(episode['count']))
@@ -341,7 +355,7 @@ def plot_episode_count(episode_data, fig):
 
 
 def plot_episode_graph(episode_data, fig):
-    x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,1.00]
+    x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.00]
     pos = []
     neg = []
     for episode in episode_data:
@@ -364,7 +378,7 @@ def plot_graph(mdp1_data, mdp2_data, sum, episode_data, fig):
         pos_data.append(numpy.mean(episode['pos_reward']))
         neg_data.append(numpy.mean(episode['neg_reward']))
 
-    x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,1.00]
+    x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.00]
     # print('size',len(mdp1_data),len(mdp2_data),len(x))
     # fig = plt.figure()
     ax1 = fig.add_subplot(221)
@@ -425,9 +439,11 @@ if __name__ == '__main__':
     mdp1 = Mdp(var_size.get(), gamma, [])
     mdp2 = Mdp(var_size.get(), gamma, [])
     mdp3 = Mdp(var_size.get(), gamma, [])
+    mdp4 = Mdp(var_size.get(), gamma, [])
+
     var_alpha = StringVar(frame, value='0')
     var_alpha.trace("w", lambda name, index, mode, sv=var_alpha: run_multi_safe_alg(c1, c2, int(var_alpha.get()), mdp1,
-                                                                                    mdp2, mdp3))
+                                                                                    mdp2, mdp3,mdp4))
     var_gamma = StringVar(frame, value='90')
     var_gamma.trace("w",
                     lambda name, index, mode, sv=var_gamma: environment_change_event(mdp1, mdp2, mdp3))
@@ -478,10 +494,10 @@ if __name__ == '__main__':
                 command=lambda: solve_mds(c1, c2, mdp1, mdp2, mdp3),
                 activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=0, sticky="we")
     b2 = Button(frame, text="Linear Combination",
-                command=lambda: run_multi_safe_alg(c1, c2, int(var_alpha.get()), mdp1, mdp2, mdp3),
+                command=lambda: run_multi_safe_alg(c1, c2, int(var_alpha.get()), mdp1, mdp2, mdp3,mdp4),
                 activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=1, sticky="we")
     b3 = Button(frame, text="Increment Iteration",
-                command=lambda: run_iteration(c1, c2, mdp1, mdp2, mdp3),
+                command=lambda:  run_iteration(c1, c2, mdp1, mdp2, mdp3,mdp4),
                 activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=4, sticky="we")
     b4 = Button(frame, text="Accu reward",
                 command=lambda: accu_reward(c1, c2, mdp1, mdp2, mdp3),
@@ -494,7 +510,7 @@ if __name__ == '__main__':
     # These are the titles
     l1 = Label(frame, text='Select environment', width=15)
     l1.grid(row=0, column=0)
-    start_cliff_world(mdp1, mdp2, mdp3)
-    run_iteration(c1, c2, mdp1, mdp2, mdp3)
+    start_cliff_world(mdp1, mdp2, mdp3, mdp4)
+    run_iteration(c1, c2, mdp1, mdp2, mdp3,mdp4)
     # draw_graphs_and_policies(c)
     top.mainloop()
