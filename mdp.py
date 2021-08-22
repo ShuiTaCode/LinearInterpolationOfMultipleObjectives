@@ -174,6 +174,7 @@ class Mdp:
         return result
 
     def transit(self, state):
+        state.increase_frequency(1)
         rng = default_rng()
         #print('transit: action result for one state with prob', state.get_x(), state.get_y(), state.get_add_values())
         transitons = []
@@ -203,7 +204,7 @@ class Mdp:
         i = 0
         #print('episode is running...')
         discounted_reward = 1
-        while not current_state.get_end() and not self.part_of_cliff(current_state):
+        while not current_state.get_end() and not self.part_of_cliff(current_state) and i<2000:
             new_state = self.transit(current_state)
             # #print('new state', new_state)
             current_state = new_state['succ_state']

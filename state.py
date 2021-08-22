@@ -8,6 +8,7 @@ class State:
         self.value = {'a':'up','r':0}
         self.add_values=[]
         self.solid=False
+        self.frequency=0
 
     def get_x(self):
         return self.x
@@ -38,15 +39,14 @@ class State:
     def get_add_values(self):
         return self.add_values
 
-    def set_penalty(self, penalty):
-        self.penalty = penalty
-
-    def get_penalty(self):
-        return self.penalty
-
     def get_solid(self):
         return self.solid
 
     def set_solid(self,solid):
         self.solid=solid
 
+    def increase_frequency(self,freq):
+        self.frequency += freq
+
+    def get_frequency(self):
+        return self.frequency
