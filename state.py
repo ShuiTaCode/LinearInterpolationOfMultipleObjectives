@@ -5,10 +5,10 @@ class State:
         self.start = False
         self.end = False
         self.penalty = False
-        self.value = {'a':'up','r':0}
-        self.add_values=[]
-        self.solid=False
-        self.frequency=0
+        self.value = {'a': 'up', 'r': 0}
+        self.add_values = []
+        self.solid = False
+        self.frequency = 0
 
     def get_x(self):
         return self.x
@@ -32,21 +32,29 @@ class State:
         return self.value
 
     def set_value(self, value):
-        self.value = {'a': value['a'],'r':value['r']}
-    def set_add_values(self,add_values):
-       # print('same value for a state, ',add_values)
-        self.add_values=add_values
+        self.value = {'a': value['a'], 'r': value['r']}
+
+    def set_add_values(self, add_values):
+        # print('same value for a state, ',add_values)
+        self.add_values = add_values
+
     def get_add_values(self):
         return self.add_values
 
     def get_solid(self):
         return self.solid
 
-    def set_solid(self,solid):
-        self.solid=solid
+    def set_solid(self, solid):
+        self.solid = solid
 
-    def increase_frequency(self,freq):
-        self.frequency += freq
+    def increase_frequency(self, freq):
+        self.set_frequency(self.get_frequency() + freq)
+
+    def set_frequency(self,freq):
+        self.frequency = freq
 
     def get_frequency(self):
         return self.frequency
+
+    def has_coord(self, coord):
+        return coord['x'] == self.get_x() and coord['y'] == self.get_y()

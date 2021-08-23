@@ -210,6 +210,8 @@ class Mdp:
             current_state = new_state['succ_state']
             discounted_reward *= new_state['prob'] * self.gamma
             i += 1
+
+        current_state.increase_frequency(1)
         if self.part_of_cliff(current_state):
             #print('cliff_collision')
             discounted_reward *= -1

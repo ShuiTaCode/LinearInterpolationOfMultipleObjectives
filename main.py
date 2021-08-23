@@ -1,4 +1,7 @@
+import math
 from tkinter import *
+
+import matplotlib
 import numpy
 import numpy as np
 from matplotlib import pyplot as plt
@@ -211,12 +214,31 @@ def draw_policy(c, x, y, scale, set_of_states):
 
 def draw_heatmap(c, x, y, scale, set_of_states):
     for s in set_of_states:
-        if len(s.get_add_values()) < 4:
-            c.create_text(x + s.x * scale + scale / 3, y + s.y * scale + scale / 2,
-                          text=s.get_frequency(),
-                          anchor='nw',
-                          font='TkMenuFont', fill='red')
+        c.create_rectangle(x + s.x * scale, y + s.y * scale, x + s.x * scale + scale,
+                           y + s.y * scale + scale, fill=freq_to_color(s.get_frequency()), )
 
+        c.create_text(x + s.x * scale + scale / 3, y + 20 + s.y * scale + scale / 2,
+                      text=s.get_frequency(),
+                      anchor='nw',
+                      font='TkMenuFont', fill='yellow')
+
+
+def freq_to_color(freq):
+    print('function started ', freq)
+    c = 25.0
+    rgba_hex ='#{:02x}{:02x}{:02x}'.format(120, 0, 255 - math.floor(255*(freq/(freq + c))))
+
+
+    return rgba_hex
+
+
+def alpha_blending(hex_color, alpha):
+    """ alpha blending as if on the white background.
+    """
+    foreground_tuple = matplotlib.colors.hex2color(hex_color)
+    foreground_arr = np.array(foreground_tuple)
+    final = tuple((1. - alpha) + foreground_arr * alpha)
+    return (final)
 
 
 def run_iteration(c1, c2, m1, m2, m3, m4):
@@ -252,10 +274,10 @@ def calc_lin_combination(mdp1, mdp2, mdp3, alpha):
     return mdp3.get_states()
 
 
-def solve_mds(c1, c2, m1, m2, m3):
+def solve_mds(c1, c2, m1, m2, m3, m4):
     mdp1.solve_mdp(var_size)
     mdp2.solve_mdp(var_size)
-    draw_graphs_and_policies(c1, c2, m1, m2, m3)
+    draw_graphs_and_policies(c1, c2, m1, m2, m3, m4)
 
 
 def draw_graphs_and_policies(canvas1, canvas2, mdp1n, mdp2n, mdp3n, mdp4n):
@@ -268,12 +290,12 @@ def draw_graphs_and_policies(canvas1, canvas2, mdp1n, mdp2n, mdp3n, mdp4n):
     draw_policy(canvas2, xmdp3, ymdp3, scale * 0.7, mdp3n.get_states())
     draw_policy(canvas2, xmdp3, ymdp3 + h, scale * 0.7, mdp4n.get_states())
 
+    draw_heatmap(canvas2, xmdp3, ymdp3 + 2 * h, scale * 0.7, mdp3n.get_states())
     draw_graph(canvas1, xmdp1, ymdp1, scale * 0.7, mdp1n)
     draw_graph(canvas1, xmdp2, ymdp2, scale * 0.7, mdp2n)
     draw_graph(canvas2, xmdp3, ymdp3, scale * 0.7, mdp3n)
     draw_graph(canvas2, xmdp3, ymdp3 + h, scale * 0.7, mdp4n)
-    draw_graph(canvas2,xmdp3, ymdp3 + 2*h, scale * 0.7, mdp3n)
-    draw_heatmap(canvas2,xmdp3, ymdp3 + 2*h, scale * 0.7, mdp3n.get_states())
+    draw_graph(canvas2, xmdp3, ymdp3 + 2 * h, scale * 0.7, mdp3n)
 
     render_scrollbars(canvas1, canvas2)
 
@@ -329,6 +351,8 @@ def run_episode(c1, c2):
     pos_reward = []
     neg_reward = []
     count = []
+    for state in mdp3.get_states():
+        state.set_frequency(0)
     for i in range(1000):
         print('episode ', i, ' of 1000')
         res = mdp3.run_episode()
@@ -346,6 +370,7 @@ def run_episode(c1, c2):
     mean_neg = np.mean(neg_reward)
     median_neg = np.median(neg_reward)
     print('mean and median pos', np.mean(pos_reward), np.median(pos_reward))
+    draw_graphs_and_policies(c1, c2, mdp1, mdp2, mdp3, mdp4)
     return {
         'pos': pos_count,
         'neg': neg_count,
@@ -504,7 +529,7 @@ if __name__ == '__main__':
                  activeforeground="red", activebackground="pink", pady=10).grid(row=4, column=2, sticky="we")
 
     b1 = Button(frame, text="Solve Mdps",
-                command=lambda: solve_mds(c1, c2, mdp1, mdp2, mdp3),
+                command=lambda: solve_mds(c1, c2, mdp1, mdp2, mdp3, mdp4),
                 activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=0, sticky="we")
     b2 = Button(frame, text="Linear Combination",
                 command=lambda: run_multi_safe_alg(c1, c2, int(var_alpha.get()), mdp1, mdp2, mdp3, mdp4),
