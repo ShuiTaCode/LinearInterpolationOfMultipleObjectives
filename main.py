@@ -24,28 +24,28 @@ def start_cliff_world(m1, m2, m3, m4):
     end = {'x': int(var_size.get()) - 2, 'y': 0}
 
     m1.set_start(start)
+    #m1.set_end({'x': end['x'], 'y': end['y'], 'reward': 0})
 
-    for i in range(int(var_size.get())):
-        cliff.append({
-            'x': int(var_size.get()) - 1,
-            'y': i
-        })
-    m1.set_cliff(cliff
-                 )
+    cliff = create_cliff(-1)
+    cliff_pos_mdp = create_cliff(0)
+
+    m1.set_cliff(cliff)
 
     m2.set_start(start)
     m2.set_end({'x': end['x'], 'y': end['y'], 'reward': 1})
+    m2.set_cliff(cliff_pos_mdp)
 
     m3.set_start(start)
     m3.set_end({'x': end['x'], 'y': end['y'], 'reward': 1})
     m3.set_cliff(cliff)
 
     m4.set_start(start)
+    cliff = create_cliff(0)
     m4.set_end({'x': end['x'], 'y': end['y'], 'reward': 1})
     m4.set_cliff(cliff)
 
     m3.increment_iteration()
-    m4.increment_iteration()
+    m4.solve_mdp(var_size)
     draw_graphs_and_policies(c1, c2, m1, m2, m3, m4)
 
 
@@ -57,6 +57,17 @@ def get_solid_states_for_deep_sea(end_state_arr):
             res.append({'x': state.get_x(), 'y': i})
             i += 1
     return res
+
+
+def create_cliff(reward):
+    cliff = []
+    for i in range(int(var_size.get())):
+        cliff.append({
+            'x': int(var_size.get()) - 1,
+            'y': i,
+            'reward': reward
+        })
+    return cliff
 
 
 def get_treasures_for_deep_sea():
@@ -213,6 +224,7 @@ def draw_policy(c, x, y, scale, set_of_states):
 
 
 def draw_heatmap(c, x, y, scale, set_of_states):
+    print('heat map data')
     for s in set_of_states:
         c.create_rectangle(x + s.x * scale, y + s.y * scale, x + s.x * scale + scale,
                            y + s.y * scale + scale, fill=freq_to_color(s.get_frequency()), )
@@ -221,20 +233,19 @@ def draw_heatmap(c, x, y, scale, set_of_states):
                       text=s.get_frequency(),
                       anchor='nw',
                       font='TkMenuFont', fill='yellow')
+        print(str(s.get_x()) + "/" + str((int(var_size.get()) - 1) - s.get_y()) + "/" + str(s.get_x() + 0.5) + "/" + str((int(var_size.get()) - 1) - s.get_y() + 0.5) + "/" + str(
+            s.get_frequency()) + "/" + str(255 - math.floor(255 * (s.get_frequency() / (s.get_frequency() + 25)))) + ",")
 
 
 def freq_to_color(freq):
-    print('function started ', freq)
+    # print('function started ', freq)
     c = 25.0
-    rgba_hex ='#{:02x}{:02x}{:02x}'.format(120, 0, 255 - math.floor(255*(freq/(freq + c))))
-
+    rgba_hex = '#{:02x}{:02x}{:02x}'.format(120, 0, 255 - math.floor(255 * (freq / (freq + c))))
 
     return rgba_hex
 
 
 def alpha_blending(hex_color, alpha):
-    """ alpha blending as if on the white background.
-    """
     foreground_tuple = matplotlib.colors.hex2color(hex_color)
     foreground_arr = np.array(foreground_tuple)
     final = tuple((1. - alpha) + foreground_arr * alpha)
@@ -280,6 +291,12 @@ def solve_mds(c1, c2, m1, m2, m3, m4):
     draw_graphs_and_policies(c1, c2, m1, m2, m3, m4)
 
 
+def evaluate(canvas1, canvas2, mdp1n, mdp2n, mdp3n, mdp4n):
+    mdp1n.evaluate_policy()
+    mdp2n.evaluate_policy()
+    draw_graphs_and_policies(canvas1, canvas2, mdp1n, mdp2n, mdp3n, mdp4n)
+
+
 def draw_graphs_and_policies(canvas1, canvas2, mdp1n, mdp2n, mdp3n, mdp4n):
     ymdp2 = int(var_size.get()) * scale * 0.7 + padding
     c1.delete('all')
@@ -289,8 +306,6 @@ def draw_graphs_and_policies(canvas1, canvas2, mdp1n, mdp2n, mdp3n, mdp4n):
     draw_policy(canvas1, xmdp2, ymdp2, scale * 0.7, mdp2n.get_states())
     draw_policy(canvas2, xmdp3, ymdp3, scale * 0.7, mdp3n.get_states())
     draw_policy(canvas2, xmdp3, ymdp3 + h, scale * 0.7, mdp4n.get_states())
-
-    draw_heatmap(canvas2, xmdp3, ymdp3 + 2 * h, scale * 0.7, mdp3n.get_states())
     draw_graph(canvas1, xmdp1, ymdp1, scale * 0.7, mdp1n)
     draw_graph(canvas1, xmdp2, ymdp2, scale * 0.7, mdp2n)
     draw_graph(canvas2, xmdp3, ymdp3, scale * 0.7, mdp3n)
@@ -303,35 +318,59 @@ def draw_graphs_and_policies(canvas1, canvas2, mdp1n, mdp2n, mdp3n, mdp4n):
 def run_multi_safe_alg(c1, c2, input, m1, m2, m3, m4):
     m1.solve_mdp(var_size)
     m2.solve_mdp(var_size)
-    m3.set_states(calc_lin_combination(m1, m2, m3, input / 100))
+    m3.set_states(calc_lin_combination(m1, m2, m3, input / 100.0))
     # mdp3.eval_policy()
+    start = {'x': int(var_size.get()) - 2, 'y': int(var_size.get()) - 1}
+    end = {'x': int(var_size.get()) - 2, 'y': 0}
+    m1.set_start(start)
+    m4.__init__(int(var_size.get()), gamma, [])
+    m4.set_start(start)
+    m4.set_end({'x': end['x'], 'y': end['y'], 'reward': 1 * (1 - (input / 100.0))})
+    m4.set_cliff(create_cliff(-1 * (input / 100.0)))
+    m4.solve_mdp(var_size)
     draw_graphs_and_policies(c1, c2, m1, m2, m3, m4)
 
 
 def accu_reward(c1, c2, m1, m2, m3, m4):
     mdp1_data = []
     mdp2_data = []
-    sum_data = []
+    mo_data = []
     episode_data = []
+    episode_data_mo = []
     mdp1.solve_mdp(var_size)
     mdp2.solve_mdp(var_size)
     c1.delete('all')
     c2.delete('all')
-    alpha = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.00]
+    alpha = [0.0, 0.05,0.1,0.15, 0.2, 0.25,0.3,0.35, 0.4, 0.45,0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9,0.95,1]
     for x in alpha:
         m3.set_states(calc_lin_combination(mdp1, mdp2, mdp3, x))
         # mdp3.run_iteration()
         # m3.eval_policy()
         #    if x>0 and x<100:
-        episode_data.append(run_episode(c1, c2))
+        mo_mdp = Mdp(var_size.get(), gamma, [])
+        start = {'x': int(var_size.get()) - 2, 'y': int(var_size.get()) - 1}
+        end = {'x': int(var_size.get()) - 2, 'y': 0}
+        m1.set_start(start)
+        cliff = create_cliff(-1 * x)
+
+        mo_mdp.set_start(start)
+        mo_mdp.set_end({'x': end['x'], 'y': end['y'], 'reward': 1 * (1 - x)})
+        mo_mdp.set_cliff(cliff)
+        mo_mdp.solve_mdp(var_size)
+
+        episode_data.append(run_episode(c1, c2, m3,1 * (1 - x),-x))
+        print('for MOMDP: ')
+        episode_data_mo.append((run_episode(c1, c2, mo_mdp,1 * (1 - x),-x)))
 
         reward_mdp1 = m1.return_start().get_value()['r'] * x
         reward_mdp2 = m2.return_start().get_value()['r'] * (1 - x)
-        sum = reward_mdp1 + reward_mdp2
+
+        reward_mo = mo_mdp.return_start().get_value()['r']
 
         mdp1_data.append(reward_mdp1)
         mdp2_data.append(reward_mdp2)
-        sum_data.append(sum)
+        mo_data.append(reward_mo)
+
         # print('final reward mdp1 for alpha ' + str(x), reward_mdp1)
         # print('final reward mdp2 for alpha ' + str(x), reward_mdp2)
 
@@ -339,23 +378,41 @@ def accu_reward(c1, c2, m1, m2, m3, m4):
 
     # mdp3.print_prob()
     fig = plt.figure()
-    plot_graph(mdp1_data, mdp2_data, sum_data, episode_data, fig)
-    plot_episode_count(episode_data, fig)
-    plot_episode_graph(episode_data, fig)
+    plot_graph(mdp1_data, mdp2_data, episode_data, fig,alpha)
+    plot_episode_count(episode_data, fig,alpha)
+    plot_episode_graph(episode_data, fig,alpha)
+    fig2 = plt.figure()
+    plot_mo_graph(mo_data, episode_data_mo, fig2,alpha)
     plt.show()
 
 
-def run_episode(c1, c2):
+def episode_runner(c1, c2, mdp3, mdp4):
+    x = int(var_alpha.get())/100.0
+    run_episode(c1, c2, mdp3,1 * (1 - x),-x)
+    print('episode for MOMDP')
+    run_episode(c1, c2, mdp4,1 * (1 - x),-x)
+    draw_graphs_and_policies(c1, c2, mdp1, mdp2, mdp3, mdp4)
+    draw_heatmap(c2, xmdp3, ymdp3 + 2 * 500, scale * 0.7, mdp3.get_states())
+    draw_heatmap(c2, xmdp3, ymdp3 + 4 * 500, scale * 0.7, mdp4.get_states())
+    print('mdp data LIMO')
+    print_chart_data(mdp3)
+    print('mdp data MOMDP')
+    print_chart_data(mdp4)
+
+
+def run_episode(c1, c, mdp,pos,neg):
+    alpha = int(var_alpha.get()) / 100.0
     pos_count = 0
     neg_count = 0
     pos_reward = []
     neg_reward = []
     count = []
-    for state in mdp3.get_states():
+    for state in mdp.get_states():
         state.set_frequency(0)
+
     for i in range(1000):
-        print('episode ', i, ' of 1000')
-        res = mdp3.run_episode()
+        # print('episode ', i, ' of 1000')
+        res = mdp.run_episode(pos,neg)
         if res['success']:
             pos_count += 1
             count.append(res['iteration'])
@@ -363,14 +420,18 @@ def run_episode(c1, c2):
         else:
             neg_count += 1
             count.append(res['iteration'])
+            #print('negative measured discounted reward: ' + str(res['discounted_reward']))
             neg_reward.append(res['discounted_reward'])
-    # print('this is 1000 count', count)
-    mean_pos = np.mean(pos_reward)
-    median_pos = np.median(pos_reward)
-    mean_neg = np.mean(neg_reward)
-    median_neg = np.median(neg_reward)
-    print('mean and median pos', np.mean(pos_reward), np.median(pos_reward))
-    draw_graphs_and_policies(c1, c2, mdp1, mdp2, mdp3, mdp4)
+    print('evaluation of episodes: ')
+    print('count pos and iterations', '(' + str(alpha) + ',' + str(pos_count) + ')','(' +  str(alpha) + ',' + str(np.median(count)) + ')')
+    print('measured pos and neg', '(' + str(alpha) + ',' + str(round(float(np.mean(pos_reward)),3)) + ')', '(' + str(alpha) + ',' + str(round(float(np.mean(neg_reward)),3)) + ')')
+    print('expected pos and neg', '(' + str(alpha) + ',' + str(round(float(np.mean(mdp2.return_start().get_value()['r'] * (1 - alpha))),3)) + ')', '(' + str(alpha) + ',' + str(round(float(np.mean(mdp1.return_start().get_value()['r'] * alpha)),3)) + ')')
+    print('complete reward measured', '(' + str(alpha) + ',' + str(round(float(np.mean(pos_reward + neg_reward)),3)) + ')')
+    print('expected reward MOMDP', '(' + str(alpha) + ',' + str(round(float(mdp4.return_start().get_value()['r']),3)) + ')')
+
+
+
+
     return {
         'pos': pos_count,
         'neg': neg_count,
@@ -380,20 +441,20 @@ def run_episode(c1, c2):
     }
 
 
-def plot_episode_count(episode_data, fig):
-    x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.00]
+def plot_episode_count(episode_data, fig,alpha):
+    #x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.00]
     count = []
     for episode in episode_data:
         count.append(numpy.median(episode['count']))
 
     ax1 = fig.add_subplot(223)
 
-    ax1.scatter(x, count, s=10, c='b', marker="s", label='number of transitions')
+    ax1.scatter(alpha, count, s=10, c='b', marker="s", label='number of transitions')
     plt.legend(loc='upper left')
 
 
-def plot_episode_graph(episode_data, fig):
-    x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.00]
+def plot_episode_graph(episode_data, fig,alpha):
+    #x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.00]
     pos = []
     neg = []
     for episode in episode_data:
@@ -402,12 +463,12 @@ def plot_episode_graph(episode_data, fig):
 
     ax1 = fig.add_subplot(222)
 
-    ax1.scatter(x, pos, s=10, c='b', marker="s", label='pos')
-    ax1.scatter(x, neg, s=10, c='r', marker="o", label='neg')
+    ax1.scatter(alpha, pos, s=10, c='b', marker="s", label='pos')
+    ax1.scatter(alpha, neg, s=10, c='r', marker="o", label='neg')
     plt.legend(loc='upper left')
 
 
-def plot_graph(mdp1_data, mdp2_data, sum, episode_data, fig):
+def plot_graph(mdp1_data, mdp2_data, episode_data, fig,alpha):
     # print('what is episode_data', episode_data)
 
     pos_data = []
@@ -416,17 +477,34 @@ def plot_graph(mdp1_data, mdp2_data, sum, episode_data, fig):
         pos_data.append(numpy.mean(episode['pos_reward']))
         neg_data.append(numpy.mean(episode['neg_reward']))
 
-    x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.00]
+   # x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.00]
     # print('size',len(mdp1_data),len(mdp2_data),len(x))
     # fig = plt.figure()
     ax1 = fig.add_subplot(221)
 
-    ax1.scatter(x, mdp2_data, s=10, c='b', marker="o", label='right Mdp')
-    ax1.scatter(x, pos_data, s=10, c='#add8e6', marker="s", label='pos_data Mdp')
-    ax1.scatter(x, mdp1_data, s=10, c='r', marker="o", label='left Mdp')
-    ax1.scatter(x, neg_data, s=10, c='#f7a6a8', marker="s", label='neg_data Mdp')
+    ax1.scatter(alpha, mdp2_data, s=10, c='b', marker="o", label='right Mdp')
+    ax1.scatter(alpha, pos_data, s=10, c='#add8e6', marker="s", label='pos_data Mdp')
+    ax1.scatter(alpha, mdp1_data, s=10, c='r', marker="o", label='left Mdp')
+    ax1.scatter(alpha, neg_data, s=10, c='#f7a6a8', marker="s", label='neg_data Mdp')
     # ax1.scatter(x, sum, s=10, c='g', marker="o", label='both')
     plt.legend(loc='upper right')
+
+def plot_mo_graph(expected_mo, episode_data, fig, alpha):
+        # print('what is episode_data', episode_data)
+
+        all_data=[]
+        for episode in episode_data:
+            all_data.append(numpy.mean(episode['pos_reward'] + episode['neg_reward']))
+
+
+        # x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.00]
+        # print('size',len(mdp1_data),len(mdp2_data),len(x))
+        # fig = plt.figure()
+        ax1 = fig.add_subplot(221)
+
+        ax1.scatter(alpha, expected_mo, s=10, c='b', marker="o", label='expected return')
+        ax1.scatter(alpha, all_data, s=10, c='#add8e6', marker="s", label='actual return')
+        plt.legend(loc='upper right')
 
 
 def environment_change_event(m1, m2, m3):
@@ -436,6 +514,13 @@ def environment_change_event(m1, m2, m3):
         start_cliff_world(m1, m2, m3)
     if option == 'deep-sea-treasure':
         start_deep_sea_treasure(m1, m2, m3)
+
+
+
+def print_chart_data(mdp):
+    for s in mdp.get_states():
+        print(str(s.get_x() + 0.5) + "/" + str((int(var_size.get()) - 1) - s.get_y() + 0.5) + "/" + str(
+            round(s.get_value()['r'], 3)) + "/" + str(s.get_value()['a']) + ",")
 
 
 def render_scrollbars(canvas1, canvas2):
@@ -536,13 +621,19 @@ if __name__ == '__main__':
                 activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=1, sticky="we")
     b3 = Button(frame, text="Increment Iteration",
                 command=lambda: run_iteration(c1, c2, mdp1, mdp2, mdp3, mdp4),
-                activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=4, sticky="we")
+                activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=8, sticky="we")
     b4 = Button(frame, text="Accu reward",
                 command=lambda: accu_reward(c1, c2, mdp1, mdp2, mdp3, mdp4),
                 activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=2, sticky="we")
     b5 = Button(frame, text="run episode",
-                command=lambda: run_episode(c1, c2),
+                command=lambda: episode_runner(c1, c2, mdp3, mdp4),
                 activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=3, sticky="we")
+    b6 = Button(frame, text="print",
+                command=lambda: print_chart_data(mdp1),
+                activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=4, sticky="we")
+    b7 = Button(frame, text="evaluate",
+                command=lambda: evaluate(c1, c2, mdp1, mdp2, mdp3, mdp4),
+                activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=7, sticky="we")
     w = OptionMenu(frame, env_option, *env_options).grid(row=0, column=1)
 
     # These are the titles
