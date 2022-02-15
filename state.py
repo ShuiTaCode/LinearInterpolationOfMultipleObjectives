@@ -3,7 +3,7 @@ class State:
         self.x = x
         self.y = y
         self.start = False
-        self.end = False
+        self.finish = False
         self.penalty = False
         self.value = {'a': 'up', 'r': 0}
         self.add_values = []
@@ -22,17 +22,21 @@ class State:
     def set_start(self, start):
         self.start = start
 
-    def get_end(self):
-        return self.end
+    def get_finish(self):
+        return self.finish
 
-    def set_end(self, end):
-        self.end = end
+    def set_finish(self, finish):
+        self.finish = finish
 
     def get_value(self):
         return self.value
 
     def set_value(self, value):
         self.value = {'a': value['a'], 'r': value['r']}
+
+    def clear_value(self):
+        self.value={'a': 'up', 'r': 0}
+        self.add_values=[]
 
     def set_add_values(self, add_values):
         # print('same value for a state, ',add_values)
@@ -58,3 +62,6 @@ class State:
 
     def has_coord(self, coord):
         return coord['x'] == self.get_x() and coord['y'] == self.get_y()
+
+    def is_terminal(self):
+        return self.get_x()==9 and self.get_y() == 9

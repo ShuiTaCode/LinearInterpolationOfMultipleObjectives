@@ -14,13 +14,13 @@ def eval_policy(self):
             })
 
         # arr = [tr for tr in arr if tr['prob'] >= 0.8]
-        # if state.get_end() == False:
+        # if state.get_finish() == False:
         # print('array der nicht end states eval', state.get_x(), state.get_y())
         # for value in arr:
         #   print(value['a'], value['r'], value['abs_val'], value['prob'], value['succ'].get_x(),
         #        value['succ'].get_y())
 
-        max_val = self.return_max_val_abs(arr)
+        max_val = return_max_val_abs(arr)
 
         all_max_val = [v for v in arr if (v['abs_val'] == max_val['abs_val'])]  # nur zwecks visualisierung
         state.set_add_values(all_max_val)  #
@@ -93,7 +93,7 @@ def get_value_by_policy(self, arr):
 
     # print('das sind nun all tr einer action', [obj for obj in arr if
     #                                           (obj['a'] == action)])
-    return self.return_max_val([obj for obj in arr if
+    return return_max_val([obj for obj in arr if
                                 (obj['a'] == action)])
 
     # print('es ist ein fehler aufgetreten das wurde nicht gefunden: ',action)
@@ -133,15 +133,15 @@ def run_iteration(self):
             })
 
         # arr = [tr for tr in arr if tr['prob'] >= 0.8]
-        # if state.get_end() == False and state.get_x() == 0 and state.get_y() == 3:
+        # if state.get_finish() == False and state.get_x() == 0 and state.get_y() == 3:
         #   print('state 0 und 3', state.get_x(), state.get_y())
         #  for value in arr:
         #     print(value['a'], value['r'], value['abs_val'], value['prob'], value['succ'].get_x(),
         #          value['succ'].get_y())
         max_val = {}
-        val = self.return_max_val(arr)
-        if state.get_end():
-            val = self.return_max_val(arr)
+        val = return_max_val(arr)
+        if state.get_finish():
+            val = return_max_val(arr)
         if self.part_of_cliff(state):
             val = self.return_min_val(arr)
         # elif self.positive:
@@ -149,11 +149,11 @@ def run_iteration(self):
         # else:
         #   val = self.return_min_val(arr)
 
-        max_val = self.return_max_val_abs(arr)
+        max_val = return_max_val_abs(arr)
 
         all_max_val = [v for v in arr if (v['abs_val'] == max_val['abs_val'])]  # nur zwecks visualisierung
 
-        #   if state.get_end() == False and state.get_x() == 0 and state.get_y() == 3:
+        #   if state.get_finish() == False and state.get_x() == 0 and state.get_y() == 3:
         # print('state03 all max')
         # for value in all_max_val:
         #   print(value['a'], value['r'], value['abs_val'], value['prob'], value['succ'].get_x(),
@@ -186,7 +186,7 @@ def accu_reward(self, lastState, thisState):
     trans = [tr for tr in trans if
              tr.get_prob() >= 0.8 and tr.get_succ_state() != lastState and tr.get_succ_state() != thisState and
              tr.get_succ_state().get_value()['r'] > thisState.get_value()['r']]
-    if thisState.get_end():
+    if thisState.get_finish():
         print('SUCCESS')
         return thisState.get_value()['r']
 
