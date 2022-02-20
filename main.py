@@ -41,6 +41,7 @@ def start_cliff_world():
     mdp4.set_start(start)
     set_rewards_for_mo_mdp(alpha)
 
+    draw_square(c3, 2000, 2000, 5, 5, 'white')
     draw_graphs_and_policies()
     draw_heatmaps()
 
@@ -88,6 +89,13 @@ def get_treasures_for_deep_sea():
     return result
 
 
+def set_rewards_for_limo(alpha): #only call after
+    environment = env_option.get()
+    if environment == 'deep-sea-treasure':
+        #mdp3.scale_end_states(1 - alpha)
+        mdp3.set_transition_penalty(-1 * alpha)
+
+
 def set_rewards_for_mo_mdp(alpha):
     environment = env_option.get()
     mdp4.clear_states()
@@ -105,6 +113,22 @@ def set_rewards_for_mo_mdp(alpha):
         mdp4.solve_mdp()
 
 
+def get_initial_treasures_for_DST():
+    treasure_scale = 4
+    treasure_y_coordinates = [1, 2, 2, 3, 3, 5, 5, 6, 7, 8]
+    x = 0
+    res = []
+    for index in range(int(var_size.get())):
+        res.append({
+            'x': x,
+            'y': treasure_y_coordinates[index],
+            'reward': (x + treasure_y_coordinates[index]) * treasure_scale
+
+        })
+        x += 1
+    return res
+
+
 def start_deep_sea_treasure():
     var_gamma_calc = int(var_gamma.get()) / 100
     alpha = int(var_alpha.get()) / 100.0
@@ -113,7 +137,7 @@ def start_deep_sea_treasure():
     mdp3.__init__(int(var_size.get()), var_gamma_calc, [])
     mdp4.__init__(int(var_size.get()), var_gamma_calc, [])
     mdp1.set_environment('deep-sea-treasure')
-    mdp2.set_environment('cliff-world')  # cliffowrld environment to reduce boilerplate for simple goal states MDP
+    mdp2.set_environment('cliff-world')  # cliffworld environment to reduce boilerplate for simple goal states MDP
     mdp3.set_environment('deep-sea-treasure')
     mdp4.set_environment('deep-sea-treasure')
     start = {'x': 0, 'y': 0}
@@ -122,34 +146,7 @@ def start_deep_sea_treasure():
     mdp3.set_start(start)
     mdp4.set_start(start)
     # treasures = get_treasures_for_deep_sea()
-    treasures = [
-        {
-            'x': 0,
-            'y': 1,
-            'reward': 1,
-        },
-        {
-            'x': 1,
-            'y': 2,
-            'reward': 8,
-        },
-        {
-            'x': 2,
-            'y': 2,
-            'reward': 16,
-        },
-        {
-            'x': 3,
-            'y': 3,
-            'reward': 36,
-        }, {
-            'x': 4,
-            'y': 3,
-            'reward': 48,
-        },
-
-    ]
-
+    treasures = get_initial_treasures_for_DST()
     for treasure in treasures:
         mdp2.set_finish(treasure)
         mdp3.set_finish(treasure)
@@ -170,6 +167,8 @@ def start_deep_sea_treasure():
 
     set_rewards_for_mo_mdp(alpha)
     mdp4.increment_iteration()
+
+    draw_square(c3, 2000, 2000, 5, 5, 'white')
     draw_graphs_and_policies()
     draw_heatmaps()
 
@@ -188,40 +187,55 @@ def draw_triangle(c, x, y, w, h, action, reward, color):
     if reward < 999:
         if action == 'up':
             c.create_line(x, y - delta, x + stretch_width * w, y - delta, fill=color, width=3)
-            c.create_line(x + stretch_width * w, y - delta, x, y - stretch_width * h * stretch_height - delta, fill=color,
+            c.create_line(x + stretch_width * w, y - delta, x, y - stretch_width * h * stretch_height - delta,
+                          fill=color,
                           width=3)
-            c.create_line(x, y - stretch_width * h * stretch_height - delta, x - stretch_width * w, y - delta, fill=color,
+            c.create_line(x, y - stretch_width * h * stretch_height - delta, x - stretch_width * w, y - delta,
+                          fill=color,
                           width=3)
             c.create_line(x - stretch_width * w, y - delta, x, y - delta, fill=color, width=3)
             return
         if action == 'down':
             c.create_line(x, y + delta, x + stretch_width * w, y + delta, fill=color, width=3)
-            c.create_line(x + stretch_width * w, y + delta, x, y + stretch_width * h * stretch_height + delta, fill=color,
+            c.create_line(x + stretch_width * w, y + delta, x, y + stretch_width * h * stretch_height + delta,
+                          fill=color,
                           width=3)
-            c.create_line(x, y + stretch_width * h * stretch_height + delta, x - stretch_width * w, y + delta, fill=color,
+            c.create_line(x, y + stretch_width * h * stretch_height + delta, x - stretch_width * w, y + delta,
+                          fill=color,
                           width=3)
             c.create_line(x - stretch_width * w, y + delta, x, y + delta, fill=color, width=3)
             return
         if action == 'left':
             c.create_line(x - delta, y, x - delta, y - stretch_width * h, fill=color, width=3)
-            c.create_line(x - delta, y - stretch_width * h, x - delta - stretch_width * w * stretch_height, y, fill=color,
+            c.create_line(x - delta, y - stretch_width * h, x - delta - stretch_width * w * stretch_height, y,
+                          fill=color,
                           width=3)
-            c.create_line(x - stretch_width * w * stretch_height - delta, y, x - delta, y + stretch_width * h, fill=color,
+            c.create_line(x - stretch_width * w * stretch_height - delta, y, x - delta, y + stretch_width * h,
+                          fill=color,
                           width=3)
             c.create_line(x - delta, y + stretch_width * h, x - delta, y, fill=color, width=3)
             return
         if action == 'right':
             c.create_line(x + delta, y, x + delta, y - stretch_width * h, fill=color, width=3)
-            c.create_line(x + delta, y - stretch_width * h, x + stretch_width * w * stretch_height + delta, y, fill=color,
+            c.create_line(x + delta, y - stretch_width * h, x + stretch_width * w * stretch_height + delta, y,
+                          fill=color,
                           width=3)
-            c.create_line(x + stretch_width * w * stretch_height + delta, y, x + delta, y + stretch_width * h, fill=color,
+            c.create_line(x + stretch_width * w * stretch_height + delta, y, x + delta, y + stretch_width * h,
+                          fill=color,
                           width=3)
             c.create_line(x + delta, y + stretch_width * h, x + delta, y, fill=color, width=3)
             return
 
 
-def validate_input(p):
-    if (p.isdigit() and int(p) <= 100) or p == "":
+def validate_input(P):
+    if (P.isdigit() and int(P) <= 100) or P == "":
+        return True
+    else:
+        return False
+
+
+def validate_input_size(P):
+    if (P.isdigit() and int(P) <= 10) or P == "":
         return True
     else:
         return False
@@ -269,7 +283,7 @@ def draw_graph(c, x, y, mdp):
     #             font='TkMenuFont', fill='black')
 
 
-def draw_policy(c, x, y,set_of_states):
+def draw_policy(c, x, y, set_of_states):
     for s in set_of_states:
         if len(s.get_add_values()) < 4:
             for max_value in s.get_add_values():
@@ -277,16 +291,16 @@ def draw_policy(c, x, y,set_of_states):
                               max_value['a'], s.value['r'], 'grey')
 
 
-def draw_heatmap(x, y,set_of_states):
+def draw_heatmap(x, y, set_of_states):
     print('heat map data')
     for s in set_of_states:
         c3.create_rectangle(x + s.x * scale, y + s.y * scale, x + s.x * scale + scale,
-                           y + s.y * scale + scale, fill=freq_to_color(s.get_frequency()), )
+                            y + s.y * scale + scale, fill=freq_to_color(s.get_frequency()), )
 
         c3.create_text(x + s.x * scale + scale / 3, y + 20 + s.y * scale + scale / 2,
-                      text=s.get_frequency(),
-                      anchor='nw',
-                      font='TkMenuFont', fill='yellow')
+                       text=s.get_frequency(),
+                       anchor='nw',
+                       font='TkMenuFont', fill='yellow')
         print(
             str(s.get_x()) + "/" + str((int(var_size.get()) - 1) - s.get_y()) + "/" + str(s.get_x() + 0.5) + "/" + str(
                 (int(var_size.get()) - 1) - s.get_y() + 0.5) + "/" + str(
@@ -312,17 +326,23 @@ def calc_lin_combination(alpha):
     mdp2_states = mdp2.get_states()
     mdp3_states = mdp3.get_states()
     new_states = []
+    end_states=[]
 
-    for i in range(len(mdp3_states)):  # changes only value of the state not it's role (e.g is_end() oder part_of_cliff
+    for i in range(len(mdp3_states)):  # changes only value of the state not it's role (e.g is_end() oder part_of_cliff)
         new_state = mdp3_states[i]
         new_value = {'a': new_state.get_value()['a'],
                      'r': mdp1_states[i].get_value()['r'] * alpha + mdp2_states[i].get_value()['r'] * (1 - alpha)}
-        new_state.set_value(new_value)
-        new_states.append(new_state)
+        if mdp3_states[i].get_finish():
+            end_states.append(mdp3_states[i])
 
-    mdp3.set_states(new_states)
+        new_state.set_value(new_value)
+        #new_states.append(new_state)
+
+
+    #mdp3.set_states(new_states)
+
     mdp3.eval_policy()
-    return mdp3.get_states()
+    # return mdp3.get_states()
 
 
 def solve_mdps():
@@ -344,14 +364,14 @@ def draw_graphs_and_policies():
     ymdp2 = int(var_size.get()) * scale + padding
     c1.delete('all')
     c2.delete('all')
-    draw_policy(c1, xmdp1, ymdp1,  mdp1.get_states())
-    draw_policy(c1, xmdp2, ymdp2,  mdp2.get_states())
+    draw_policy(c1, xmdp1, ymdp1, mdp1.get_states())
+    draw_policy(c1, xmdp2, ymdp2, mdp2.get_states())
     draw_policy(c2, xmdp3, ymdp3, mdp3.get_states())
-    draw_policy(c2, xmdp3, ymdp2,  mdp4.get_states())
-    draw_graph(c1, xmdp1, ymdp1,  mdp1)
-    draw_graph(c1, xmdp2, ymdp2,  mdp2)
-    draw_graph(c2, xmdp3, ymdp3,  mdp3)
-    draw_graph(c2, xmdp3, ymdp2,  mdp4)
+    draw_policy(c2, xmdp3, ymdp2, mdp4.get_states())
+    draw_graph(c1, xmdp1, ymdp1, mdp1)
+    draw_graph(c1, xmdp2, ymdp2, mdp2)
+    draw_graph(c2, xmdp3, ymdp3, mdp3)
+    draw_graph(c2, xmdp3, ymdp2, mdp4)
     render_scrollbars()
 
 
@@ -359,10 +379,11 @@ def set_lin_combination():
     alpha = int(var_alpha.get()) / 100.0
     mdp1.solve_mdp()
     mdp2.solve_mdp()
-    mdp3.set_states(calc_lin_combination(alpha))
+    calc_lin_combination(alpha)
     set_rewards_for_mo_mdp(alpha)
     mdp4.solve_mdp()
     draw_graphs_and_policies()
+
 
 
 # def accu_reward(c1, c2, m1, m2, m3, m4):
@@ -433,23 +454,23 @@ def clear_canvas():
 #  print_chart_data(mdp4)
 
 
-def run_single_episode(mdp, mode):
-    alpha = int(var_alpha.get()) / 100.0
-    if mode == 'mo':
-        set_rewards_for_mo_mdp(alpha)
-        res = mdp.run_episode_mo()
-    else:
-        res = mdp.run_episode_limo()
-
-    if res['success']:
-        print('success: ')
-        print('iteration:', res['iteration'])
-        print('discounted reward: ', res['discounted_reward'])
-    else:
-        print('failure')
-        print('iteration:', res['iteration'])
-        print('discounted reward: ', res['discounted_reward'])
-    print('information', res)
+# def run_single_episode(mdp, mode):
+#     alpha = int(var_alpha.get()) / 100.0
+#     if mode == 'mo':
+#         set_rewards_for_mo_mdp(alpha)
+#         res = mdp.run_episode_mo()
+#     else:
+#         res = mdp.run_episode_limo()
+#
+#     if res['success']:
+#         print('success: ')
+#         print('iteration:', res['iteration'])
+#         print('discounted reward: ', res['discounted_reward'])
+#     else:
+#         print('failure')
+#         print('iteration:', res['iteration'])
+#         print('discounted reward: ', res['discounted_reward'])
+#     print('information', res)
 
 
 def graph(mdp, is_limo, label):
@@ -505,40 +526,41 @@ def run_single_preference(alpha, multiple):
         clear_heat_map(mdp3)
         res = run_episode(mdp3, 'limo', alpha)
         if not multiple:
-            draw_heatmap( 0, 0 , mdp3.get_states())
+            draw_heatmap(0, 0, mdp3.get_states())
     else:
         clear_heat_map(mdp4)
         res = run_episode(mdp4, 'MO', alpha)
         if not multiple:
-            draw_heatmap( 0, y_heat_map_2,  mdp4.get_states())
+            draw_heatmap(0, y_heat_map_2, mdp4.get_states())
 
     return res
 
 
 def draw_heatmaps():
     y_heat_map_2 = int(var_size.get()) * scale + padding
-    draw_heatmap(0, 0,  mdp3.get_states())
+    draw_heatmap(0, 0, mdp3.get_states())
     draw_heatmap(0, y_heat_map_2, mdp4.get_states())
 
 
 def run_multiple_preferences():
-    label=alg_option.get() + '-plot for ' + var_number_of_episodes.get() + '  episodes'
-    exp_ret_array= []
-    act_ret_array=[]
+    label = alg_option.get() + '-plot for ' + var_number_of_episodes.get() + '  episodes in ' + env_option.get() + ' Environment'
+    exp_ret_array = []
+    act_ret_array = []
     exp = ""
     act = ""
+    iteration = ""
     for x in alpha_definition_set:
         res = run_single_preference(x, True)
         exp_ret_array.append(res['exp_ret'])
         act_ret_array.append(res['act_ret'])
         exp = exp + "(" + str(x) + "," + str(res['exp_ret']) + ") "
         act = act + "(" + str(x) + "," + str(res['act_ret']) + ") "
+        iteration = iteration + "(" + str(x) + "," + str(res['count']) + ") "
 
     print('expected discounted return: ', exp)
     print('actual discounted return: ', act)
+    print('iteration: ', iteration)
     plot_data(alpha_definition_set, exp_ret_array, act_ret_array, label)
-
-
 
 
 def print_policy(mdp):
@@ -546,7 +568,7 @@ def print_policy(mdp):
         print(state.__dict__['x'], state.__dict__['y'], state.__dict__['add_values'])
 
 
-def print_evaluation(alpha,pos_reward,neg_reward,count,pos_count):
+def print_evaluation(alpha, pos_reward, neg_reward, count, pos_count):
     print('evaluation of episodes: ')
     print('count pos and iterations', '(' + str(alpha) + ',' + str(pos_count) + ')',
           '(' + str(alpha) + ',' + str(np.median(count)) + ')')
@@ -559,6 +581,9 @@ def print_evaluation(alpha,pos_reward,neg_reward,count,pos_count):
           '(' + str(alpha) + ',' + str(round(float(np.mean(pos_reward + neg_reward)), 3)) + ')')
     print('expected reward MOMDP',
           '(' + str(alpha) + ',' + str(round(float(mdp4.return_start().get_value()['r']), 3)) + ')')
+    print('expected reward LIMO',
+          '(' + str(alpha) + ',' + str(round(float(mdp3.return_start().get_value()['r']), 3)) + ')')
+    print('median of transitions: ',np.median(count))
 
 
 def run_episode(mdp, mode, alpha):
@@ -572,21 +597,23 @@ def run_episode(mdp, mode, alpha):
     if not is_limo:
         set_rewards_for_mo_mdp(alpha)
 
+
     clear_heat_map(mdp)
+    calc_lin_combination(alpha)
+    # print('exp start: ',mdp.return_start().get_value()['r'])
+    # print('policy LIMO')
+    # print_policy(mdp3)
+    set_rewards_for_limo(alpha)
 
     for i in range(int(var_number_of_episodes.get())):
-        print('episode ', i, ' of ', var_number_of_episodes.get())
+        # print('episode ', i, ' of ', var_number_of_episodes.get())
         if is_limo:
-            mdp3.set_states(calc_lin_combination(alpha))
-            mdp3.eval_policy()
-            # print('exp start: ',mdp.return_start().get_value()['r'])
-            print('policy LIMO')
-            print_policy(mdp3)
             res = mdp3.run_episode_limo()
+
         else:
             # set_rewards_for_mo_mdp(mdp,alpha)
-            print('policy MOMDP')
-            print_policy(mdp4)
+            # print('policy MOMDP')
+            # print_policy(mdp4)
             res = mdp4.run_episode_mo()
 
         if res['success']:
@@ -598,15 +625,16 @@ def run_episode(mdp, mode, alpha):
             count.append(res['iteration'])
             # print('negative measured discounted reward: ' + str(res['discounted_reward']))
             neg_reward.append(res['discounted_reward'])
-
-    print_evaluation(alpha,pos_reward,neg_reward,count,pos_count)
+        print('RES',res['discounted_reward'])
+    print('reward array: ',pos_reward + neg_reward)
+    print_evaluation(alpha, pos_reward, neg_reward, count, pos_count)
 
     return {
         'exp_ret': round(float(mdp.return_start().get_value()['r']), 3),
         'act_ret': round(float(np.mean(pos_reward + neg_reward)), 3),
         'pos': pos_count,
         'neg': neg_count,
-        'count': count,
+        'count': np.median(count),
         'pos_reward': pos_reward,
         'neg_reward': neg_reward,
     }
@@ -704,6 +732,7 @@ def plot_limo_graph(expected_limo, episode_data, fig, alpha):
 def environment_change_event():
     var_alpha.set('0')
     print('environment changed: ', env_option.get())
+    c3.delete('all')
     option = env_option.get()
     if option == 'cliff-world':
         start_cliff_world()
@@ -716,20 +745,28 @@ def print_latex_for_state(state):
         round(state.get_value()['r'], 3)) + "/" + str(state.get_value()['a']) + ",")
 
 
-def print_chart_data(mdp):
-    for s in mdp.get_states():
+def print_chart_data():
+    print('mdp1')
+    for s in mdp1.get_states():
         if not s.get_solid():
             print_latex_for_state(s)
-
     print('mdp2')
     for s in mdp2.get_states():
+        if not s.get_solid():
+            print_latex_for_state(s)
+    print('mdp3')
+    for s in mdp3.get_states():
+        if not s.get_solid():
+            print_latex_for_state(s)
+    print('mdp4')
+    for s in mdp4.get_states():
         if not s.get_solid():
             print_latex_for_state(s)
 
 
 def render_scrollbar_for_canvas(canvas_frame_input, canvas_input, col1, col2):
     scroll_x = Scrollbar(canvas_frame_input, orient="horizontal", command=canvas_input.xview)
-    scroll_x.grid(row=3, column=col1, sticky="ew")
+    scroll_x.grid(row=1, column=col1, sticky="ew")
     scroll_y = Scrollbar(canvas_frame_input, orient="vertical", command=canvas_input.yview)
     scroll_y.grid(row=2, column=col2, sticky="ns")
     canvas_input.configure(yscrollcommand=scroll_y.set, xscrollcommand=scroll_x.set)
@@ -778,19 +815,19 @@ if __name__ == '__main__':
     var_gamma.trace("w", lambda name, index, mode, sv=var_gamma: environment_change_event())
 
     canvas_frame = Frame(top)
-    Label(canvas_frame, text="LIMO Archetypes").grid(row=1, column=0, sticky="nw")
+    Label(canvas_frame, text="LIMO Archetypes").grid(row=0, column=0, sticky="nw")
     canvas_frame.grid(row=2, column=0, sticky="w", padx=(10, 0))
     c1 = Canvas(canvas_frame, width=500, height=800, background='white')
     c1.grid(row=2, column=0, sticky="w")
 
     canvas_frame_2 = Frame(top)
-    Label(canvas_frame_2, text="LIMO and MOMDP result").grid(row=1, column=1, sticky="nw")
+    Label(canvas_frame_2, text="LIMO (top) and MOMDP (bottom) result").grid(row=0, column=1, sticky="nw")
     canvas_frame_2.grid(row=2, column=1, sticky="w")
     c2 = Canvas(canvas_frame_2, width=500, height=800, background='white')
     c2.grid(row=2, column=1, sticky="w")
 
     canvas_frame_3 = Frame(top)
-    Label(canvas_frame_3, text="Heat Map").grid(row=1, column=2, sticky="nw")
+    Label(canvas_frame_3, text="Heat Map").grid(row=0, column=2, sticky="nw")
     canvas_frame_3.grid(row=2, column=2, sticky="e")
     c3 = Canvas(canvas_frame_3, width=500, height=800, background='white')
     c3.grid(row=2, column=2, sticky="w")
@@ -800,9 +837,10 @@ if __name__ == '__main__':
     Label(frame, text="alpha (%)").grid(row=2, column=0, sticky="w")
     Label(frame, text='Number of Episodes').grid(row=2, column=2, sticky='w')
     Label(frame, text="gamma (%)").grid(row=3, column=0, sticky="w")
-    Label(frame, text="size").grid(row=4, column=0, sticky="w")
+    Label(frame, text="size (max 10)").grid(row=4, column=0, sticky="w")
 
     validation = (frame.register(validate_input))
+    validation_size = (frame.register(validate_input_size))
 
     Entry(frame, validate='all', textvariable=var_alpha, validatecommand=(validation, '%P')).grid(row=2, column=1,
                                                                                                   sticky=E + W)
@@ -812,9 +850,9 @@ if __name__ == '__main__':
         row=2,
         column=3,
         sticky=E + W)
-    Entry(frame, validate='all', textvariable=var_size, validatecommand=(validation, '%P')).grid(row=4,
-                                                                                                 column=1,
-                                                                                                 sticky=E + W)
+    Entry(frame, validate='all', textvariable=var_size, validatecommand=(validation_size, '%P')).grid(row=4,
+                                                                                                      column=1,
+                                                                                                      sticky=E + W)
     Button(frame, text="Increment Iteration",
            command=lambda: run_iteration(),
            activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=0, sticky="we")
@@ -825,8 +863,8 @@ if __name__ == '__main__':
            command=lambda: environment_change_event(),
            activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=2, sticky="we")
 
-    Button(frame, text="Linear Combination",
-           command=lambda: set_lin_combination(),
+    Button(frame, text="Print Latex Archetypes",
+           command=lambda: print_chart_data(),
            activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=3, sticky="we")
     # Button(frame, text="Accu reward",
     #        command=lambda: accu_reward(c1, c2, mdp1, mdp2, mdp3, mdp4),

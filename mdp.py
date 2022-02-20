@@ -188,13 +188,18 @@ class Mdp:
         else:
             random_action = random.choice(state.get_add_values())
 
+        if len(state.get_add_values())>1:
+            print('multi add',state.get_add_values())
+
+
         for t in [tr for tr in self.init_set_of_transitions_probabilities_and_rewards if
                   tr.get_state() == state and tr.get_action() == random_action['a']]:
             # print(t.__dict__, t.get_succ_state().get_x(), t.get_succ_state().get_y())
             transitions.append(t)
             prob.append(t.get_prob())
-
+        print('probability dist',prob)
         transition = rng.choice(transitions, p=prob, )
+        print('transition',transition.get_action())
         # #print('succstate', succ_state.__dict__)
         return {
             'current_state': transition.get_state(),
@@ -207,7 +212,7 @@ class Mdp:
             self.transit(state)
 
     def run_episode_mo(self):
-        print('run episode mooooo')
+        # print('run episode mooooo')
         max_transition_threshold = 1000
         current_state = self.init_state
         previous_state = {}
@@ -215,6 +220,7 @@ class Mdp:
         # print('episode is running...')
         discounted_reward = 0
         # states have been set print("episode started")
+        print('start', self.return_start().get_x(), self.return_start().get_y())
         while not current_state.is_terminal() and i < max_transition_threshold:
             # new_state = self.transit(current_state)
             # print('new state', new_state['current_state'].__dict__)
@@ -224,14 +230,15 @@ class Mdp:
             previous_state = new_state["current_state"]
             current_state = new_state['succ_state']
             discounted_reward += new_state['reward'] * pow(self.gamma, i)
-            discounted_reward *= self.gamma
+            #discounted_reward *= self.gamma
             i += 1
+            print('EPISODE MOMDP: ', i,discounted_reward,current_state.get_x(),current_state.get_y(),current_state.get_value())
 
         current_state.increase_frequency(1)
         # print('what is the curren state:',current_state.get_value()['r'],pow(self.gamma,i-1),
         # current_state.get_value()['r']*pow(self.gamma,i-1))
 
-        # discounted_reward += current_state.get_value()['r']*pow(self.gamma,i)
+
         if i == max_transition_threshold:
             print('maximum of transitions')
         if previous_state.get_finish() or i == max_transition_threshold:
@@ -247,26 +254,34 @@ class Mdp:
                     }
 
     def run_episode_limo(self):
-        print('run episode limooo')
+        # print('run episode limooo')
         max_transition_threshold = 1000
         current_state = self.init_state
         i = 0
         # print('episode is running...')
         discounted_reward = 0
-
-        while not current_state.get_finish() and not self.part_of_cliff(current_state) and i < max_transition_threshold:
+        #print('start',self.return_start().get_x(),self.return_start().get_y())
+        while not current_state.get_finish() and not self.part_of_cliff(
+                current_state) and i < max_transition_threshold:
             new_state = self.transit(current_state)
-            print(current_state.get_add_values())
+            # print(current_state.get_add_values())
             current_state = new_state['succ_state']
             discounted_reward += new_state['reward'] * pow(self.gamma, i)
-            discounted_reward *= self.gamma
+            # discounted_reward *= self.gamma
             i += 1
+            print('EPISODE LIMO: ',i,discounted_reward,current_state.get_x(),current_state.get_y(),current_state.get_value())
+
+        discounted_reward += current_state.get_value()['r'] * pow(self.gamma, i)
+        #discounted_reward *= self.gamma
+        i += 1
+        print('episode has ended',discounted_reward)
 
         current_state.increase_frequency(1)
         # print('what is the curren state:',current_state.get_value()['r'],pow(self.gamma,i-1),
         # current_state.get_value()['r']*pow(self.gamma,i-1))
 
-        discounted_reward += current_state.get_value()['r'] * pow(self.gamma, i)
+
+
         if i == max_transition_threshold:
             print('maximum of transitions')
         if current_state.get_finish() or i == max_transition_threshold:
@@ -366,7 +381,7 @@ class Mdp:
     def set_finish(self, state_dict):
         state = self.get_state_by_coordinates(state_dict['x'], state_dict['y'])
         state.set_finish(True)
-        transition = Transition(state, 'exit', State(9, 9))
+        transition = Transition(state, 'exit', State('end', 'end'))
         transition.set_prob(1)
         transition.set_reward(state_dict['reward'])
         self.init_set_of_transitions_probabilities_and_rewards = [tr for tr in
@@ -377,7 +392,7 @@ class Mdp:
 
     def set_cliff_state(self, cliff_state_dict):
         state = self.get_state_by_coordinates(cliff_state_dict['x'], cliff_state_dict['y'])
-        transition = Transition(state, 'exit', State(9, 9))
+        transition = Transition(state, 'exit', State('end', 'end'))
         transition.set_prob(1)
         transition.set_reward(cliff_state_dict['reward'])
         self.init_set_of_transitions_probabilities_and_rewards = [tr for tr in
@@ -487,7 +502,7 @@ class Mdp:
             )
 
     def set_treasures(self, treasures):
-        print("treasures", treasures)
+
         self.treasures = treasures
 
     def get_states(self):

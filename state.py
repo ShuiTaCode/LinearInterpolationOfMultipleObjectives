@@ -35,8 +35,8 @@ class State:
         self.value = {'a': value['a'], 'r': value['r']}
 
     def clear_value(self):
-        self.value={'a': 'up', 'r': 0}
-        self.add_values=[]
+        self.value = {'a': 'up', 'r': 0}
+        self.add_values = []
 
     def set_add_values(self, add_values):
         # print('same value for a state, ',add_values)
@@ -54,7 +54,7 @@ class State:
     def increase_frequency(self, freq):
         self.set_frequency(self.get_frequency() + freq)
 
-    def set_frequency(self,freq):
+    def set_frequency(self, freq):
         self.frequency = freq
 
     def get_frequency(self):
@@ -64,4 +64,4 @@ class State:
         return coord['x'] == self.get_x() and coord['y'] == self.get_y()
 
     def is_terminal(self):
-        return self.get_x()==9 and self.get_y() == 9
+        return self.get_x() == 'end' and self.get_y() == 'end'
