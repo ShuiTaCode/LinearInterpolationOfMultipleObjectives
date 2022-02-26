@@ -10,14 +10,16 @@ from matplotlib import pyplot as plt
 
 from mdp import Mdp
 
+from LIMOconfig import LIMOconfiguration
+
 
 def start_cliff_world():
     var_gamma_calc = int(var_gamma.get()) / 100.0
     alpha = int(var_alpha.get()) / 100.0
-    mdp1.__init__(int(var_size.get()), var_gamma_calc, [])
-    mdp2.__init__(int(var_size.get()), var_gamma_calc, [])
-    mdp3.__init__(int(var_size.get()), var_gamma_calc, [])
-    mdp4.__init__(int(var_size.get()), var_gamma_calc, [])
+    mdp1.__init__(int(var_size.get()), var_gamma_calc, [],config.NOISE_FACTOR)
+    mdp2.__init__(int(var_size.get()), var_gamma_calc, [],config.NOISE_FACTOR)
+    mdp3.__init__(int(var_size.get()), var_gamma_calc, [],config.NOISE_FACTOR)
+    mdp4.__init__(int(var_size.get()), var_gamma_calc, [],config.NOISE_FACTOR)
     mdp1.set_environment('cliff-world')
     mdp2.set_environment('cliff-world')
     mdp3.set_environment('cliff-world')
@@ -132,10 +134,10 @@ def get_initial_treasures_for_DST():
 def start_deep_sea_treasure():
     var_gamma_calc = int(var_gamma.get()) / 100
     alpha = int(var_alpha.get()) / 100.0
-    mdp1.__init__(int(var_size.get()), var_gamma_calc, [])
-    mdp2.__init__(int(var_size.get()), var_gamma_calc, [])
-    mdp3.__init__(int(var_size.get()), var_gamma_calc, [])
-    mdp4.__init__(int(var_size.get()), var_gamma_calc, [])
+    mdp1.__init__(int(var_size.get()), var_gamma_calc, [],config.NOISE_FACTOR)
+    mdp2.__init__(int(var_size.get()), var_gamma_calc, [],config.NOISE_FACTOR)
+    mdp3.__init__(int(var_size.get()), var_gamma_calc, [],config.NOISE_FACTOR)
+    mdp4.__init__(int(var_size.get()), var_gamma_calc, [],config.NOISE_FACTOR)
     mdp1.set_environment('deep-sea-treasure')
     mdp2.set_environment('cliff-world')  # cliffworld environment to reduce boilerplate for simple goal states MDP
     mdp3.set_environment('deep-sea-treasure')
@@ -758,6 +760,7 @@ def print_graph_latex_tikzpicture_CW(mdp):
 
 
 def print_graph_latex_tikzpicture_DST(mdp):
+
     boiler_start = '\\begin{tikzpicture}  \n \\fill[' \
                    'blue](3,0) rectangle (4,1); \n \\fill[blue](0,4) rectangle (1,5); \n' \
                    '\\fill[green](0,3) rectangle (1,4); \n' \
@@ -872,10 +875,12 @@ def print_heatmap_latex_figure_DST(alpha):
     print(boiler_end)
 
 
-def print_full_appendix_comparisons():  # prints all the comparisions in latex-code for the selected environment for
-    # every alpha
-    for x in alpha_definition_set:
-        print_full_latex_comparison(x)
+def print_full_appendix_comparisons():  # prints all the comparisons in latex-code for the selected environment f
+    if config.LATEX_PRINT_MODE == 'single':
+        print_full_latex_comparison(int(var_alpha.get())/100.0)
+    else:
+        for x in alpha_definition_set:
+            print_full_latex_comparison(x)
 
 
 def print_full_latex_comparison(alpha):
@@ -931,6 +936,7 @@ if __name__ == '__main__':
     top = Tk()
     frame = Frame(top)
     frame.grid(row=0, column=0, sticky="w", padx=(10, 0))
+    config = LIMOconfiguration()
 
     scale = 120 * 0.7
     xmdp1 = 0
@@ -944,12 +950,12 @@ if __name__ == '__main__':
     var_number_of_episodes = StringVar(frame, value='1000')
     var_gamma = StringVar(frame, value='90')
     var_alpha = StringVar(frame, value='0')
-    alpha_definition_set = create_definition_set(20)
+    alpha_definition_set = create_definition_set(config.PREFERENCE_SET_SIZE)
 
-    mdp1 = Mdp(var_size.get(), int(var_gamma.get()), [])
-    mdp2 = Mdp(var_size.get(), int(var_gamma.get()), [])
-    mdp3 = Mdp(var_size.get(), int(var_gamma.get()), [])
-    mdp4 = Mdp(var_size.get(), int(var_gamma.get()), [])
+    mdp1 = Mdp(var_size.get(), int(var_gamma.get()), [],config.NOISE_FACTOR)
+    mdp2 = Mdp(var_size.get(), int(var_gamma.get()), [],config.NOISE_FACTOR)
+    mdp3 = Mdp(var_size.get(), int(var_gamma.get()), [],config.NOISE_FACTOR)
+    mdp4 = Mdp(var_size.get(), int(var_gamma.get()), [],config.NOISE_FACTOR)
 
     env_options = ['cliff-world', 'deep-sea-treasure']
     alg_options = ['LIMO', 'MOMPD']

@@ -516,8 +516,8 @@ class Mdp:
     def set_size(self, size):
         self.size = size
 
-    def __init__(self, size, gamma, policy):
-        self.noise = 0.2
+    def __init__(self, size, gamma, policy, noise):
+        self.noise = noise
         self.size = int(size)
         self.gamma = gamma
         self.policy = policy
