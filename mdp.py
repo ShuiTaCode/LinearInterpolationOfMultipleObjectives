@@ -188,8 +188,6 @@ class Mdp:
         else:
             random_action = random.choice(state.get_add_values())
 
-        if len(state.get_add_values())>1:
-            print('multi add',state.get_add_values())
 
 
         for t in [tr for tr in self.init_set_of_transitions_probabilities_and_rewards if
@@ -197,9 +195,9 @@ class Mdp:
             # print(t.__dict__, t.get_succ_state().get_x(), t.get_succ_state().get_y())
             transitions.append(t)
             prob.append(t.get_prob())
-        print('probability dist',prob)
+        # print('probability dist',prob)
         transition = rng.choice(transitions, p=prob, )
-        print('transition',transition.get_action())
+        # print('transition',transition.get_action())
         # #print('succstate', succ_state.__dict__)
         return {
             'current_state': transition.get_state(),
@@ -220,7 +218,7 @@ class Mdp:
         # print('episode is running...')
         discounted_reward = 0
         # states have been set print("episode started")
-        print('start', self.return_start().get_x(), self.return_start().get_y())
+
         while not current_state.is_terminal() and i < max_transition_threshold:
             # new_state = self.transit(current_state)
             # print('new state', new_state['current_state'].__dict__)
@@ -232,15 +230,14 @@ class Mdp:
             discounted_reward += new_state['reward'] * pow(self.gamma, i)
             #discounted_reward *= self.gamma
             i += 1
-            print('EPISODE MOMDP: ', i,discounted_reward,current_state.get_x(),current_state.get_y(),current_state.get_value())
+            #print('EPISODE MOMDP: ', i,discounted_reward,current_state.get_x(),current_state.get_y(),current_state.get_value())
 
         current_state.increase_frequency(1)
         # print('what is the curren state:',current_state.get_value()['r'],pow(self.gamma,i-1),
         # current_state.get_value()['r']*pow(self.gamma,i-1))
 
 
-        if i == max_transition_threshold:
-            print('maximum of transitions')
+
         if previous_state.get_finish() or i == max_transition_threshold:
             # print('success!', i,discounted_reward )
             return {'iteration': i,
@@ -269,12 +266,12 @@ class Mdp:
             discounted_reward += new_state['reward'] * pow(self.gamma, i)
             # discounted_reward *= self.gamma
             i += 1
-            print('EPISODE LIMO: ',i,discounted_reward,current_state.get_x(),current_state.get_y(),current_state.get_value())
+            # print('EPISODE LIMO: ',i,discounted_reward,current_state.get_x(),current_state.get_y(),current_state.get_value())
 
         discounted_reward += current_state.get_value()['r'] * pow(self.gamma, i)
         #discounted_reward *= self.gamma
         i += 1
-        print('episode has ended',discounted_reward)
+        #print('episode has ended',discounted_reward)
 
         current_state.increase_frequency(1)
         # print('what is the curren state:',current_state.get_value()['r'],pow(self.gamma,i-1),
@@ -282,8 +279,6 @@ class Mdp:
 
 
 
-        if i == max_transition_threshold:
-            print('maximum of transitions')
         if current_state.get_finish() or i == max_transition_threshold:
             # print('success!', i, discounted_reward)
             return {'iteration': i,

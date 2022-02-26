@@ -1,14 +1,14 @@
+import copy
 import math
+import random
 from tkinter import *
 
 # import matplotlib
 import numpy
 import numpy as np
 from matplotlib import pyplot as plt
-import copy
 
 from mdp import Mdp
-import random
 
 
 def start_cliff_world():
@@ -89,10 +89,10 @@ def get_treasures_for_deep_sea():
     return result
 
 
-def set_rewards_for_limo(alpha): #only call after
+def set_rewards_for_limo(alpha):  # only call after
     environment = env_option.get()
     if environment == 'deep-sea-treasure':
-        #mdp3.scale_end_states(1 - alpha)
+        # mdp3.scale_end_states(1 - alpha)
         mdp3.set_transition_penalty(-1 * alpha)
 
 
@@ -292,7 +292,6 @@ def draw_policy(c, x, y, set_of_states):
 
 
 def draw_heatmap(x, y, set_of_states):
-    print('heat map data')
     for s in set_of_states:
         c3.create_rectangle(x + s.x * scale, y + s.y * scale, x + s.x * scale + scale,
                             y + s.y * scale + scale, fill=freq_to_color(s.get_frequency()), )
@@ -301,6 +300,15 @@ def draw_heatmap(x, y, set_of_states):
                        text=s.get_frequency(),
                        anchor='nw',
                        font='TkMenuFont', fill='yellow')
+        # print(
+        #     str(s.get_x()) + "/" + str((int(var_size.get()) - 1) - s.get_y()) + "/" + str(s.get_x() + 0.5) + "/" + str(
+        #         (int(var_size.get()) - 1) - s.get_y() + 0.5) + "/" + str(
+        #         s.get_frequency()) + "/" + str(
+        #         255 - math.floor(255 * (s.get_frequency() / (s.get_frequency() + 25)))) + ",")
+
+
+def print_heatmap(mdp):
+    for s in mdp.get_states():
         print(
             str(s.get_x()) + "/" + str((int(var_size.get()) - 1) - s.get_y()) + "/" + str(s.get_x() + 0.5) + "/" + str(
                 (int(var_size.get()) - 1) - s.get_y() + 0.5) + "/" + str(
@@ -308,25 +316,24 @@ def draw_heatmap(x, y, set_of_states):
                 255 - math.floor(255 * (s.get_frequency() / (s.get_frequency() + 25)))) + ",")
 
 
-def freq_to_color(freq):
+def freq_to_color(freq):  # calculates the color of a state in the heatmap
     c = 25.0  # prevents division by zero if freq == 0
     rgba_hex = '#{:02x}{:02x}{:02x}'.format(120, 0, 255 - math.floor(255 * (freq / (freq + c))))
     return rgba_hex
 
 
-def run_iteration():
+def run_iteration():  # runs the Value Iteration algorithm for all relevant MDPs
     mdp1.increment_iteration()
     mdp2.increment_iteration()
     mdp4.increment_iteration()
     draw_graphs_and_policies()
 
 
-def calc_lin_combination(alpha):
+def calc_lin_combination(alpha):  # calculates the linear combination based on alpha
     mdp1_states = mdp1.get_states()
     mdp2_states = mdp2.get_states()
     mdp3_states = mdp3.get_states()
-    new_states = []
-    end_states=[]
+    end_states = []
 
     for i in range(len(mdp3_states)):  # changes only value of the state not it's role (e.g is_end() oder part_of_cliff)
         new_state = mdp3_states[i]
@@ -334,18 +341,12 @@ def calc_lin_combination(alpha):
                      'r': mdp1_states[i].get_value()['r'] * alpha + mdp2_states[i].get_value()['r'] * (1 - alpha)}
         if mdp3_states[i].get_finish():
             end_states.append(mdp3_states[i])
-
         new_state.set_value(new_value)
-        #new_states.append(new_state)
-
-
-    #mdp3.set_states(new_states)
 
     mdp3.eval_policy()
-    # return mdp3.get_states()
 
 
-def solve_mdps():
+def solve_mdps():  # solves all MDPs including the MOMDP scalarized with the preference defined through alpha
     alpha = int(var_alpha.get()) / 100.0
     mdp1.solve_mdp()
     mdp2.solve_mdp()
@@ -354,24 +355,19 @@ def solve_mdps():
     draw_graphs_and_policies()
 
 
-# def evaluate(canvas1, canvas2, mdp1n, mdp2n, mdp3n, mdp4n):
-#     mdp1n.evaluate_policy()
-#     mdp2n.evaluate_policy()
-#     draw_graphs_and_policies()
-
-
-def draw_graphs_and_policies():
-    ymdp2 = int(var_size.get()) * scale + padding
+def draw_graphs_and_policies(): # draws the Gridworld-visualisation of the MDPs, value-functions as well as their
+    # greedy policies
+    y_mdp2 = int(var_size.get()) * scale + padding # the start y coordinate of the lower MDPs
     c1.delete('all')
     c2.delete('all')
     draw_policy(c1, xmdp1, ymdp1, mdp1.get_states())
-    draw_policy(c1, xmdp2, ymdp2, mdp2.get_states())
+    draw_policy(c1, xmdp2, y_mdp2, mdp2.get_states())
     draw_policy(c2, xmdp3, ymdp3, mdp3.get_states())
-    draw_policy(c2, xmdp3, ymdp2, mdp4.get_states())
+    draw_policy(c2, xmdp3, y_mdp2, mdp4.get_states())
     draw_graph(c1, xmdp1, ymdp1, mdp1)
-    draw_graph(c1, xmdp2, ymdp2, mdp2)
+    draw_graph(c1, xmdp2, y_mdp2, mdp2)
     draw_graph(c2, xmdp3, ymdp3, mdp3)
-    draw_graph(c2, xmdp3, ymdp2, mdp4)
+    draw_graph(c2, xmdp3, y_mdp2, mdp4)
     render_scrollbars()
 
 
@@ -385,92 +381,9 @@ def set_lin_combination():
     draw_graphs_and_policies()
 
 
-
-# def accu_reward(c1, c2, m1, m2, m3, m4):
-#     mdp1_data = []
-#     mdp2_data = []
-#     mo_data = []
-#     limo_data = []
-#     episode_data = []
-#     episode_data_mo = []
-#     mdp1.solve_mdp()
-#     mdp2.solve_mdp()
-#     mdp4.solve_mdp()
-#     clear_canvas(c1, c2)
-#     for x in alpha_definition_set:
-#         m3.set_states(calc_lin_combination(mdp1, mdp2, mdp3, x))  # create value function for LIMO
-#
-#         set_rewards_for_mo_mdp(mdp4, x)  # create reward function for MOMDP
-#         mdp4.solve_mdp()
-#
-#         episode_data.append(run_episode(m3, True))  # run monte-carlo 1000 episodes for LIMO
-#         episode_data_mo.append(run_episode(mdp4, False))  # run monte-carlo 1000 episodes for MOMDP
-#
-#         reward_mdp1 = m1.return_start().get_value()['r'] * x
-#         reward_mdp2 = m2.return_start().get_value()['r'] * (1 - x)
-#         reward_limo = m3.return_start().get_value()['r']
-#         reward_mo = mdp4.return_start().get_value()['r']
-#
-#         mdp1_data.append(reward_mdp1)
-#         mdp2_data.append(reward_mdp2)
-#         mo_data.append(reward_mo)
-#         limo_data.append(reward_limo)
-#
-#         # print('final reward mdp1 for alpha ' + str(x), reward_mdp1)
-#         # print('final reward mdp2 for alpha ' + str(x), reward_mdp2)
-#
-#     draw_graphs_and_policies()
-#
-#     # mdp3.print_prob()
-#     fig = plt.figure()
-#     plot_graph(mdp1_data, mdp2_data, episode_data, fig, alpha_definition_set)
-#     plot_episode_count(episode_data, fig, alpha_definition_set)
-#     plot_episode_graph(episode_data, fig, alpha_definition_set)
-#     fig2 = plt.figure()
-#     plot_graph_from_data(mo_data, episode_data_mo, fig2, alpha_definition_set, 'MOMDP')
-#     fig3 = plt.figure()
-#     plot_graph_from_data(limo_data, episode_data, fig3, alpha_definition_set, 'LIMO')
-#     plt.show()
-
-
 def clear_canvas():
     c1.delete('all')
     c2.delete('all')
-
-
-# def episode_runner(c1, c2, mdp3, mdp4):
-#     x = int(var_alpha.get()) / 100.0
-#     run_episode(mdp3, True)
-
-
-#  print('episode for MOMDP')
-#  run_episode(mdp4, False)
-#  draw_graphs_and_policies(c1, c2, mdp1, mdp2, mdp3, mdp4)
-#  draw_heatmap(c2, xmdp3, ymdp3 + 2 * 500, scale * 0.7, mdp3.get_states())
-#  draw_heatmap(c2, xmdp3, ymdp3 + 4 * 500, scale * 0.7, mdp4.get_states())
-#  print('mdp data LIMO')
-#  print_chart_data(mdp3)
-#  print('mdp data MOMDP')
-#  print_chart_data(mdp4)
-
-
-# def run_single_episode(mdp, mode):
-#     alpha = int(var_alpha.get()) / 100.0
-#     if mode == 'mo':
-#         set_rewards_for_mo_mdp(alpha)
-#         res = mdp.run_episode_mo()
-#     else:
-#         res = mdp.run_episode_limo()
-#
-#     if res['success']:
-#         print('success: ')
-#         print('iteration:', res['iteration'])
-#         print('discounted reward: ', res['discounted_reward'])
-#     else:
-#         print('failure')
-#         print('iteration:', res['iteration'])
-#         print('discounted reward: ', res['discounted_reward'])
-#     print('information', res)
 
 
 def graph(mdp, is_limo, label):
@@ -485,16 +398,9 @@ def graph(mdp, is_limo, label):
         exp = exp + "(" + str(x) + "," + str(res['exp_ret']) + ") "
         act = act + "(" + str(x) + "," + str(res['act_ret']) + ") "
 
-    print('expected discounted return: ', exp)
-    print('actual discounted return: ', act)
+    # print('expected discounted return: ', exp)
+    # print('actual discounted return: ', act)
     plot_data(alpha_definition_set, exp_ret_array, act_ret_array, label)
-    # fig = plt.figure()
-    # fig.suptitle(label, fontsize=16)
-    # ax1 = fig.add_subplot(221)
-    # ax1.scatter(alpha, exp_ret_array, s=10, c='b', marker="o", label='expected return')
-    # ax1.scatter(alpha, act_ret_array, s=10, c='#add8e6', marker="s", label='actual return')
-    # plt.legend(loc='upper right')
-    # plt.show()
 
 
 def plot_data(definition_set, plot1, plot2, headline):
@@ -521,10 +427,9 @@ def clear_heat_maps():
 def run_single_preference(alpha, multiple):
     set_lin_combination()
     y_heat_map_2 = int(var_size.get()) * scale + padding
-    res = {}
     if alg_option.get() == 'LIMO':
         clear_heat_map(mdp3)
-        res = run_episode(mdp3, 'limo', alpha)
+        res = run_episode(mdp3, 'LIMO', alpha)
         if not multiple:
             draw_heatmap(0, 0, mdp3.get_states())
     else:
@@ -570,33 +475,27 @@ def print_policy(mdp):
 
 def print_evaluation(alpha, pos_reward, neg_reward, count, pos_count):
     print('evaluation of episodes: ')
-    print('count pos and iterations', '(' + str(alpha) + ',' + str(pos_count) + ')',
+    print('success-rate pos and iterations', '(' + str(alpha) + ',' + str(pos_count) + ')',
           '(' + str(alpha) + ',' + str(np.median(count)) + ')')
-    # print('measured pos and neg', '(' + str(alpha) + ',' + str(round(float(np.mean(pos_reward)), 3)) + ')',
-    #      '(' + str(alpha) + ',' + str(round(float(np.mean(neg_reward)), 3)) + ')')
-    # print('expected pos and neg', '(' + str(alpha) + ',' + str(
-    #    round(float(np.mean(mdp2.return_start().get_value()['r'] * (1 - alpha))), 3)) + ')',
-    #     '(' + str(alpha) + ',' + str(round(float(np.mean(mdp1.return_start().get_value()['r'] * alpha)), 3)) + ')')
     print('complete reward measured',
           '(' + str(alpha) + ',' + str(round(float(np.mean(pos_reward + neg_reward)), 3)) + ')')
     print('expected reward MOMDP',
           '(' + str(alpha) + ',' + str(round(float(mdp4.return_start().get_value()['r']), 3)) + ')')
     print('expected reward LIMO',
           '(' + str(alpha) + ',' + str(round(float(mdp3.return_start().get_value()['r']), 3)) + ')')
-    print('median of transitions: ',np.median(count))
+    print('median of transitions: ', np.median(count))
 
 
 def run_episode(mdp, mode, alpha):
-    print('run episodes for alpha=', alpha)
+    # print('run episodes for alpha=', alpha)
     pos_count = 0
     neg_count = 0
     pos_reward = []
     neg_reward = []
     count = []
-    is_limo = mode == 'limo'
+    is_limo = mode == 'LIMO'
     if not is_limo:
         set_rewards_for_mo_mdp(alpha)
-
 
     clear_heat_map(mdp)
     calc_lin_combination(alpha)
@@ -625,9 +524,8 @@ def run_episode(mdp, mode, alpha):
             count.append(res['iteration'])
             # print('negative measured discounted reward: ' + str(res['discounted_reward']))
             neg_reward.append(res['discounted_reward'])
-        print('RES',res['discounted_reward'])
-    print('reward array: ',pos_reward + neg_reward)
-    print_evaluation(alpha, pos_reward, neg_reward, count, pos_count)
+
+    # print_evaluation(alpha, pos_reward, neg_reward, count, pos_count)
 
     return {
         'exp_ret': round(float(mdp.return_start().get_value()['r']), 3),
@@ -720,6 +618,17 @@ def plot_limo_graph(expected_limo, episode_data, fig, alpha):
     plt.legend(loc='upper right')
 
 
+def create_definition_set(size):  # creates a discrete interval between 0 and 1 with a 1/size step
+    step = 1.0 / size
+    counter = 0
+    result_set = [0]
+    while len(result_set) <= size:
+        counter += step
+        counter = round(counter, 4)
+        result_set.append(counter)
+    return result_set
+
+
 # def resize_mpds(can1, can2):
 #     length = int(var_size.get()) * 120
 #     can1.__init__(canvas_frame, width=length, height=length, background='white')
@@ -740,28 +649,267 @@ def environment_change_event():
         start_deep_sea_treasure()
 
 
-def print_latex_for_state(state):
+def print_latex_for_state(state, mdp):
+    action = str(state.get_value()['a'])
+    if state.get_finish() or mdp.part_of_cliff(state):
+        action = 'exit'
     print(str(state.get_x() + 0.5) + "/" + str((int(var_size.get()) - 1) - state.get_y() + 0.5) + "/" + str(
-        round(state.get_value()['r'], 3)) + "/" + str(state.get_value()['a']) + ",")
+        round(state.get_value()['r'], 3)) + "/" + action + ",")
+
+
+def print_heatmap_latex_tikzpicture_CW(mdp):
+    boiler_start = '\\begin{tikzpicture} \n' \
+                   '\\foreach \\xsquare/\\ysquare/\\x/\\y/\\freq/\\col ' \
+                   'in { '
+
+    boiler_end = '} \n { \n' \
+                 '\\fill[fill={rgb:red,50;green,50;blue,\\col}](\\xsquare,\\ysquare) rectangle (\\xsquare +1,\\ysquare+1);' \
+                 '\\draw[white] (\\x,\\y) node {\\scriptsize\\freq};' \
+                 '} \n' \
+                 '\draw[step=1cm,black,very thin] (0,0) grid (5,5); \n' \
+                 '\\draw[step=1cm,red,thick] (4,4) grid (5,5); \n' \
+                 '\\draw[step=1cm,red,thick] (4,3) grid (5,4); \n' \
+                 '\\draw[step=1cm,red,thick] (4,2) grid (5,3); \n' \
+                 '\\draw[step=1cm,red,thick] (4,1) grid (5,2); \n' \
+                 '\\draw[step=1cm,red,thick] (4,0) grid (5,1); \n' \
+                 '\\draw[step=1cm,green,thick] (3,4) grid (4,5); \n' \
+                 '\\end{tikzpicture}'
+
+    print(boiler_start)
+    print_heatmap(mdp)
+    print(boiler_end)
+
+
+def print_heatmap_latex_tikzpicture_DST(mdp):
+    boiler_start = '\\begin{tikzpicture} \n' \
+                   '\\foreach \\xsquare/\\ysquare/\\x/\\y/\\freq/\\col ' \
+                   'in { '
+
+    boiler_end = '} \n { \n' \
+                 '\\fill[fill={rgb:red,50;green,50;blue,\\col}](\\xsquare,\\ysquare) rectangle (\\xsquare +1,\\ysquare+1);' \
+                 '\\draw[white] (\\x,\\y) node {\\scriptsize\\freq};' \
+                 '} \n' \
+                 '\\fill[gray](0,0) rectangle (1,1); \n' \
+                 '\\fill[gray](1,0) rectangle (2,1); \n' \
+                 '\\fill[gray](2,0) rectangle (3,1); \n' \
+                 '\\fill[gray](3,0) rectangle (4,1); \n' \
+                 '\\fill[gray](4,0) rectangle (5,1); \n' \
+                 '\\fill[gray](0,1) rectangle (1,2); \n' \
+                 '\\fill[gray](1,1) rectangle (2,2); \n' \
+                 '\\fill[gray](2,1) rectangle (3,2); \n' \
+                 '\\fill[gray](0,2) rectangle (1,3); \n' \
+                 '\\draw[step=1cm,black,very thin] (0,0) grid (5,5); \n' \
+                 '\\draw[step=1cm,blue,thick](0,4) rectangle (1,5); \n' \
+                 '\\draw[step=1cm,green,thick](0,3) rectangle (1,4); \n' \
+                 '\\draw[step=1cm,green,thick](1,2) rectangle (2,3); \n' \
+                 '\\draw[step=1cm,green,thick](2,2) rectangle (3,3); \n' \
+                 '\\draw[step=1cm,green,thick](3,1) rectangle (4,2); \n' \
+                 '\\draw[step=1cm,green,thick](4,1) rectangle (5,2); \n' \
+                 '\\end{tikzpicture}'
+
+    print(boiler_start)
+    print_heatmap(mdp)
+    print(boiler_end)
+
+
+def print_graph_latex_tikzpicture_CW(mdp):
+    boiler_start = '\\begin{tikzpicture}  \n ' \
+                   '\\draw[step=1cm,black,very thin] (0,0) grid (5,5); \n' \
+                   '\\fill[blue](3,0) rectangle (4,1); \n' \
+                   '\\fill[green](3,4) rectangle (4,5); \n' \
+                   '\\fill[red] (4,4) rectangle (5,5); \n' \
+                   '\\fill[red] (4,3) rectangle (5,5); \n' \
+                   '\\fill[red] (4,2) rectangle (5,5); \n' \
+                   '\\fill[red] (4,1) rectangle (5,5); \n' \
+                   '\\fill[red] (4,0) rectangle (5,5); \n' \
+                   '\n  \\foreach \\x/\\y/\\reward/\\action ' \
+                   'in { '
+
+    boiler_end = '} \n { \n' \
+                 '\\ifthenelse{\\equal{\\action}{up} }{ \n' \
+                 '\\draw [fill=orange,orange] (\\x - 0.35,\\y + 0.3) node[anchor=north]{} \n' \
+                 '-- (\\x + 0.35 ,\\y + 0.3 ) node[anchor=north]{} \n' \
+                 '-- (\\x,\\y + 0.45) node[anchor=south]{} \n' \
+                 '-- cycle;}{} \n' \
+                 '\\ifthenelse{\\equal{\\action}{down} }{ \n' \
+                 '\\draw [fill=orange,orange] (\\x - 0.35,\\y - 0.3) node[anchor=north]{} \n' \
+                 '-- (\\x + 0.35 ,\\y -0.3 ) node[anchor=north]{} \n' \
+                 '-- (\\x,\\y - 0.45) node[anchor=south]{} \n' \
+                 '-- cycle;}{} \n' \
+                 '\\ifthenelse{\\equal{\\action}{left} }{ \n' \
+                 '\\draw [fill=orange,orange] (\\x - 0.3,\\y - 0.35) node[anchor=north]{} \n' \
+                 '-- (\\x - 0.3 ,\\y +0.35 ) node[anchor=north]{} \n' \
+                 '-- (\\x - 0.45,\\y ) node[anchor=south]{} \n' \
+                 '-- cycle;}{} \n' \
+                 '\\ifthenelse{\\equal{\\action}{right} }{ \n' \
+                 '\\draw [fill=orange,orange] (\\x + 0.3,\\y - 0.35) node[anchor=north]{} \n' \
+                 '-- (\\x + 0.3 ,\\y + 0.35 ) node[anchor=north]{} \n' \
+                 '-- (\\x + 0.45 ,\\y ) node[anchor=south]{} \n' \
+                 '-- cycle;}{} \n' \
+                 '\draw (\\x,\\y) node{\scriptsize\\reward}; \n' \
+                 '} \n' \
+                 '\\end{tikzpicture}'
+
+    print(boiler_start)
+    for s in mdp.get_states():
+        if not s.get_solid():
+            print_latex_for_state(s, mdp)
+    print(boiler_end)
+
+
+def print_graph_latex_tikzpicture_DST(mdp):
+    boiler_start = '\\begin{tikzpicture}  \n \\fill[' \
+                   'blue](3,0) rectangle (4,1); \n \\fill[blue](0,4) rectangle (1,5); \n' \
+                   '\\fill[green](0,3) rectangle (1,4); \n' \
+                   '\\fill[green](1,2) rectangle (2,3); \n' \
+                   '\\fill[green](2,2) rectangle (3,3); \n' \
+                   '\\fill[green](3,1) rectangle (4,2); \n' \
+                   '\\fill[green](4,1) rectangle (5,2); \n' \
+                   '\\fill[gray](0,0) rectangle (1,1); \n' \
+                   '\\fill[gray](1,0) rectangle (2,1); \n' \
+                   '\\fill[gray](2,0) rectangle (3,1); \n' \
+                   '\\fill[gray](3,0) rectangle (4,1); \n' \
+                   '\\fill[gray](4,0) rectangle (5,1); \n' \
+                   '\\fill[gray](0,1) rectangle (1,2); \n' \
+                   '\\fill[gray](1,1) rectangle (2,2); \n' \
+                   '\\fill[gray](2,1) rectangle (3,2); \n' \
+                   '\\fill[gray](0,2) rectangle (1,3); \n' \
+                   '\\draw[step=1cm,black,very thin] (0,0) grid (5,5); \n' \
+                   '\n  \\foreach \\x/\\y/\\reward/\\action ' \
+                   'in { '
+
+    boiler_end = '} \n { \n' \
+                 '\\ifthenelse{\\equal{\\action}{up} }{ \n' \
+                 '\\draw [fill=orange,orange] (\\x - 0.35,\\y + 0.3) node[anchor=north]{} \n' \
+                 '-- (\\x + 0.35 ,\\y + 0.3 ) node[anchor=north]{} \n' \
+                 '-- (\\x,\\y + 0.45) node[anchor=south]{} \n' \
+                 '-- cycle;}{} \n' \
+                 '\\ifthenelse{\\equal{\\action}{down} }{ \n' \
+                 '\\draw [fill=orange,orange] (\\x - 0.35,\\y - 0.3) node[anchor=north]{} \n' \
+                 '-- (\\x + 0.35 ,\\y -0.3 ) node[anchor=north]{} \n' \
+                 '-- (\\x,\\y - 0.45) node[anchor=south]{} \n' \
+                 '-- cycle;}{} \n' \
+                 '\\ifthenelse{\\equal{\\action}{left} }{ \n' \
+                 '\\draw [fill=orange,orange] (\\x - 0.3,\\y - 0.35) node[anchor=north]{} \n' \
+                 '-- (\\x - 0.3 ,\\y +0.35 ) node[anchor=north]{} \n' \
+                 '-- (\\x - 0.45,\\y ) node[anchor=south]{} \n' \
+                 '-- cycle;}{} \n' \
+                 '\\ifthenelse{\\equal{\\action}{right} }{ \n' \
+                 '\\draw [fill=orange,orange] (\\x + 0.3,\\y - 0.35) node[anchor=north]{} \n' \
+                 '-- (\\x + 0.3 ,\\y + 0.35 ) node[anchor=north]{} \n' \
+                 '-- (\\x + 0.45 ,\\y ) node[anchor=south]{} \n' \
+                 '-- cycle;}{} \n' \
+                 '\draw (\\x,\\y) node{\scriptsize\\reward}; \n' \
+                 '} \n' \
+                 '\\end{tikzpicture}'
+
+    print(boiler_start)
+    for s in mdp.get_states():
+        if not s.get_solid():
+            print_latex_for_state(s, mdp)
+    print(boiler_end)
+
+
+def print_graph_latex_figure_CW(alpha):
+    alpha_string = str(alpha)
+    label_key = alpha_string[0: 1:] + alpha_string[2::]
+    boiler_start = '\\begin{figure} \n \\centering'
+    boiler_end = '\\caption{Optimal value functions $V_{LIMO}(\\alpha) = \\alpha V_{Cliff} + (1 - \\alpha)V_{' \
+                 'Goal}$ (' \
+                 'left) and $V_{MOMDP}(\\alpha)$ (right) for $\\alpha=' + alpha_string + '$ } \n ' \
+                                                                                         '\\label{fig:CWCompareGraph' + label_key + '} \n' \
+                                                                                                                                    '\\end{figure} '
+
+    print(boiler_start)
+    print_graph_latex_tikzpicture_CW(mdp3)
+    print_graph_latex_tikzpicture_CW(mdp4)
+    print(boiler_end)
+
+
+def print_graph_latex_figure_DST(alpha):
+    alpha_string = str(alpha)
+    label_key = alpha_string[0: 1:] + alpha_string[2::]
+    boiler_start = '\\begin{figure} \n \\centering'
+    boiler_end = '\\caption{Optimal value functions $V_{LIMO}(\\alpha) = \\alpha V_{Time} + (1 - \\alpha)V_{' \
+                 'Treasure}$ (' \
+                 'left) and $V_{MOMDP}(\\alpha)$ (right) for $\\alpha=' + alpha_string + '$ } \n ' \
+                                                                                         '\\label{fig:DSTCompareGraph' + label_key + '} \n' \
+                                                                                                                                     '\\end{figure} '
+
+    print(boiler_start)
+    print_graph_latex_tikzpicture_DST(mdp3)
+    print_graph_latex_tikzpicture_DST(mdp4)
+    print(boiler_end)
+
+
+def print_heatmap_latex_figure_CW(alpha):
+    alpha_string = str(alpha)
+    label_key = alpha_string[0: 1:] + alpha_string[2::]
+    boiler_start = '\\begin{figure} \n \\centering'
+
+    boiler_end = '\\caption{Heatmap of the states our agent visited during 1000 episodes for $\\alpha = ' + alpha_string + ' $ using LIMO (left) and a scarlized MOMDP policy (right) \n}' \
+                                                                                                                           '\\label{fig:CWCompareHeatmap' + label_key + '} \n' \
+                                                                                                                                                                        '\\end{figure} '
+
+    print(boiler_start)
+    print_heatmap_latex_tikzpicture_CW(mdp3)
+    print_heatmap_latex_tikzpicture_CW(mdp4)
+    print(boiler_end)
+
+
+def print_heatmap_latex_figure_DST(alpha):
+    alpha_string = str(alpha)
+    label_key = alpha_string[0: 1:] + alpha_string[2::]
+    boiler_start = '\\begin{figure} \n \\centering'
+
+    boiler_end = '\\caption{Heatmap of the states our agent visited during 1000 episodes for $\\alpha = ' + alpha_string + ' $ using LIMO (left) and a scarlized MOMDP policy (right) \n}' \
+                                                                                                                           '\\label{fig:DSTCompareHeatmap' + label_key + '} \n' \
+                                                                                                                                                                         '\\end{figure} '
+
+    print(boiler_start)
+    print_heatmap_latex_tikzpicture_DST(mdp3)
+    print_heatmap_latex_tikzpicture_DST(mdp4)
+    print(boiler_end)
+
+
+def print_full_appendix_comparisons():  # prints all the comparisions in latex-code for the selected environment for
+    # every alpha
+    for x in alpha_definition_set:
+        print_full_latex_comparison(x)
+
+
+def print_full_latex_comparison(alpha):
+    environment = env_option.get()
+
+    solve_mdps()
+    run_episode(mdp3, 'LIMO', alpha)
+    run_episode(mdp4, 'MO', alpha)
+
+    if environment == 'cliff-world':
+        print_heatmap_latex_figure_CW(alpha)
+        print_graph_latex_figure_CW(alpha)
+    else:
+        print_heatmap_latex_figure_DST(alpha)
+        print_graph_latex_figure_DST(alpha)
 
 
 def print_chart_data():
     print('mdp1')
     for s in mdp1.get_states():
         if not s.get_solid():
-            print_latex_for_state(s)
+            print_latex_for_state(s, mdp1)
     print('mdp2')
     for s in mdp2.get_states():
         if not s.get_solid():
-            print_latex_for_state(s)
+            print_latex_for_state(s, mdp2)
     print('mdp3')
     for s in mdp3.get_states():
         if not s.get_solid():
-            print_latex_for_state(s)
+            print_latex_for_state(s, mdp3)
     print('mdp4')
     for s in mdp4.get_states():
         if not s.get_solid():
-            print_latex_for_state(s)
+            print_latex_for_state(s, mdp4)
 
 
 def render_scrollbar_for_canvas(canvas_frame_input, canvas_input, col1, col2):
@@ -796,9 +944,7 @@ if __name__ == '__main__':
     var_number_of_episodes = StringVar(frame, value='1000')
     var_gamma = StringVar(frame, value='90')
     var_alpha = StringVar(frame, value='0')
-    alpha_definition_set = [0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8,
-                            0.85, 0.9,
-                            0.95, 1]
+    alpha_definition_set = create_definition_set(20)
 
     mdp1 = Mdp(var_size.get(), int(var_gamma.get()), [])
     mdp2 = Mdp(var_size.get(), int(var_gamma.get()), [])
@@ -863,8 +1009,8 @@ if __name__ == '__main__':
            command=lambda: environment_change_event(),
            activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=2, sticky="we")
 
-    Button(frame, text="Print Latex Archetypes",
-           command=lambda: print_chart_data(),
+    Button(frame, text="Print Latex Comparison",
+           command=lambda: print_full_appendix_comparisons(),
            activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=3, sticky="we")
     # Button(frame, text="Accu reward",
     #        command=lambda: accu_reward(c1, c2, mdp1, mdp2, mdp3, mdp4),
