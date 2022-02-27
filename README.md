@@ -5,7 +5,15 @@ problems with conflicting objectives. This application is used to interactively 
 
 ## Installation
 
-The application requires (was tested on) [Python 3.6](https://www.python.org/downloads/release/python-360/) or higher. In the directory of this README.md file run:
+The application requires (was tested on) [Python 3.6](https://www.python.org/downloads/release/python-360/) as well as the libraries [numpy](https://numpy.org/install/) and [matplotlib](https://matplotlib.org/3.5.1/).You can simply install them in the directory of this README.md file using [pip](https://pypi.org/project/pip/):
+```
+pip install numpy
+```
+```
+pip install matplotlib
+```
+After this you can start the main.py file the directory of this README.md file using:
+
 ```
 python main.py
 ```
