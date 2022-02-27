@@ -1,7 +1,7 @@
 # Linear Interpolation of Multiple Objectives (LIMO)
 
 LIMO is a multiple-policy approach for Multi-Objective Reinforcement Learning (MORL)
-problems with conflicting objectives. This application is used to interactively demonstrate the procedure of LIMO. It is also able to generate plots from data and even LATEX-Code.
+problems with conflicting objectives. This application is used to interactively demonstrate the procedure of LIMO in two well known MORL domains. It is also able to generate plots from data and even LATEX-Code.
 
 ## Installation
 

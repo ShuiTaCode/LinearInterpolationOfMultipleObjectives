@@ -4,7 +4,6 @@ class State:
         self.y = y
         self.start = False
         self.finish = False
-        self.penalty = False
         self.value = {'a': 'up', 'r': 0}
         self.add_values = []
         self.solid = False

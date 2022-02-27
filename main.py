@@ -2,9 +2,6 @@ import copy
 import math
 import random
 from tkinter import *
-
-# import matplotlib
-import numpy
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -16,10 +13,10 @@ from LIMOconfig import LIMOconfiguration
 def start_cliff_world():
     var_gamma_calc = int(var_gamma.get()) / 100.0
     alpha = int(var_alpha.get()) / 100.0
-    mdp1.__init__(int(var_size.get()), var_gamma_calc, [],config.NOISE_FACTOR)
-    mdp2.__init__(int(var_size.get()), var_gamma_calc, [],config.NOISE_FACTOR)
-    mdp3.__init__(int(var_size.get()), var_gamma_calc, [],config.NOISE_FACTOR)
-    mdp4.__init__(int(var_size.get()), var_gamma_calc, [],config.NOISE_FACTOR)
+    mdp1.__init__(int(var_size.get()), var_gamma_calc, [], config.NOISE_FACTOR)
+    mdp2.__init__(int(var_size.get()), var_gamma_calc, [], config.NOISE_FACTOR)
+    mdp3.__init__(int(var_size.get()), var_gamma_calc, [], config.NOISE_FACTOR)
+    mdp4.__init__(int(var_size.get()), var_gamma_calc, [], config.NOISE_FACTOR)
     mdp1.set_environment('cliff-world')
     mdp2.set_environment('cliff-world')
     mdp3.set_environment('cliff-world')
@@ -134,10 +131,10 @@ def get_initial_treasures_for_DST():
 def start_deep_sea_treasure():
     var_gamma_calc = int(var_gamma.get()) / 100
     alpha = int(var_alpha.get()) / 100.0
-    mdp1.__init__(int(var_size.get()), var_gamma_calc, [],config.NOISE_FACTOR)
-    mdp2.__init__(int(var_size.get()), var_gamma_calc, [],config.NOISE_FACTOR)
-    mdp3.__init__(int(var_size.get()), var_gamma_calc, [],config.NOISE_FACTOR)
-    mdp4.__init__(int(var_size.get()), var_gamma_calc, [],config.NOISE_FACTOR)
+    mdp1.__init__(int(var_size.get()), var_gamma_calc, [], config.NOISE_FACTOR)
+    mdp2.__init__(int(var_size.get()), var_gamma_calc, [], config.NOISE_FACTOR)
+    mdp3.__init__(int(var_size.get()), var_gamma_calc, [], config.NOISE_FACTOR)
+    mdp4.__init__(int(var_size.get()), var_gamma_calc, [], config.NOISE_FACTOR)
     mdp1.set_environment('deep-sea-treasure')
     mdp2.set_environment('cliff-world')  # cliffworld environment to reduce boilerplate for simple goal states MDP
     mdp3.set_environment('deep-sea-treasure')
@@ -278,11 +275,7 @@ def draw_graph(c, x, y, mdp):
             draw_square(c, x + temp_end_state.x * scale, y + temp_end_state.y * scale, scale, scale, 'red')
             c.create_text(x + temp_end_state.x * scale, y + temp_end_state.y * scale, text='End ', anchor='nw',
                           font='TkMenuFont', fill='red')
-        # draw_square(c, x + temp_end_state.x * scale, y + temp_end_state.y * scale, scale, scale, 'green')
 
-    # c.create_text(x + temp_end_state.x * scale + scale / 2, y + temp_end_state.y * scale + scale / 2,
-    #              text=temp_end_state.get_value()['r'], anchor='nw',
-    #             font='TkMenuFont', fill='black')
 
 
 def draw_policy(c, x, y, set_of_states):
@@ -302,11 +295,7 @@ def draw_heatmap(x, y, set_of_states):
                        text=s.get_frequency(),
                        anchor='nw',
                        font='TkMenuFont', fill='yellow')
-        # print(
-        #     str(s.get_x()) + "/" + str((int(var_size.get()) - 1) - s.get_y()) + "/" + str(s.get_x() + 0.5) + "/" + str(
-        #         (int(var_size.get()) - 1) - s.get_y() + 0.5) + "/" + str(
-        #         s.get_frequency()) + "/" + str(
-        #         255 - math.floor(255 * (s.get_frequency() / (s.get_frequency() + 25)))) + ",")
+
 
 
 def print_heatmap(mdp):
@@ -357,9 +346,9 @@ def solve_mdps():  # solves all MDPs including the MOMDP scalarized with the pre
     draw_graphs_and_policies()
 
 
-def draw_graphs_and_policies(): # draws the Gridworld-visualisation of the MDPs, value-functions as well as their
+def draw_graphs_and_policies():  # draws the Gridworld-visualisation of the MDPs, value-functions as well as their
     # greedy policies
-    y_mdp2 = int(var_size.get()) * scale + padding # the start y coordinate of the lower MDPs
+    y_mdp2 = int(var_size.get()) * scale + padding  # the start y coordinate of the lower MDPs
     c1.delete('all')
     c2.delete('all')
     draw_policy(c1, xmdp1, ymdp1, mdp1.get_states())
@@ -400,8 +389,6 @@ def graph(mdp, is_limo, label):
         exp = exp + "(" + str(x) + "," + str(res['exp_ret']) + ") "
         act = act + "(" + str(x) + "," + str(res['act_ret']) + ") "
 
-    # print('expected discounted return: ', exp)
-    # print('actual discounted return: ', act)
     plot_data(alpha_definition_set, exp_ret_array, act_ret_array, label)
 
 
@@ -464,9 +451,9 @@ def run_multiple_preferences():
         act = act + "(" + str(x) + "," + str(res['act_ret']) + ") "
         iteration = iteration + "(" + str(x) + "," + str(res['count']) + ") "
 
-    print('expected discounted return: ', exp)
-    print('actual discounted return: ', act)
-    print('iteration: ', iteration)
+    # print('expected discounted return: ', exp)
+    # print('actual discounted return: ', act)
+    # print('iteration: ', iteration)
     plot_data(alpha_definition_set, exp_ret_array, act_ret_array, label)
 
 
@@ -501,20 +488,13 @@ def run_episode(mdp, mode, alpha):
 
     clear_heat_map(mdp)
     calc_lin_combination(alpha)
-    # print('exp start: ',mdp.return_start().get_value()['r'])
-    # print('policy LIMO')
-    # print_policy(mdp3)
     set_rewards_for_limo(alpha)
 
     for i in range(int(var_number_of_episodes.get())):
-        # print('episode ', i, ' of ', var_number_of_episodes.get())
         if is_limo:
             res = mdp3.run_episode_limo()
 
         else:
-            # set_rewards_for_mo_mdp(mdp,alpha)
-            # print('policy MOMDP')
-            # print_policy(mdp4)
             res = mdp4.run_episode_mo()
 
         if res['success']:
@@ -524,10 +504,7 @@ def run_episode(mdp, mode, alpha):
         else:
             neg_count += 1
             count.append(res['iteration'])
-            # print('negative measured discounted reward: ' + str(res['discounted_reward']))
             neg_reward.append(res['discounted_reward'])
-
-    # print_evaluation(alpha, pos_reward, neg_reward, count, pos_count)
 
     return {
         'exp_ret': round(float(mdp.return_start().get_value()['r']), 3),
@@ -540,86 +517,6 @@ def run_episode(mdp, mode, alpha):
     }
 
 
-def plot_episode_count(episode_data, fig, alpha):
-    # x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.00]
-    count = []
-    for episode in episode_data:
-        count.append(numpy.median(episode['count']))
-
-    ax1 = fig.add_subplot(223)
-
-    ax1.scatter(alpha, count, s=10, c='b', marker="s", label='number of transitions')
-    plt.legend(loc='upper left')
-
-
-def plot_episode_graph(episode_data, fig, alpha):
-    # x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.00]
-    pos = []
-    neg = []
-    for episode in episode_data:
-        pos.append(episode['pos'])
-        neg.append(episode['neg'])
-
-    ax1 = fig.add_subplot(222)
-
-    ax1.scatter(alpha, pos, s=10, c='b', marker="s", label='pos')
-    ax1.scatter(alpha, neg, s=10, c='r', marker="o", label='neg')
-    plt.legend(loc='upper left')
-
-
-def plot_graph(mdp1_data, mdp2_data, episode_data, fig, alpha):
-    # print('what is episode_data', episode_data)
-
-    pos_data = []
-    neg_data = []
-    for episode in episode_data:
-        pos_data.append(numpy.mean(episode['pos_reward']))
-        neg_data.append(numpy.mean(episode['neg_reward']))
-
-    # x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.00]
-    # print('size',len(mdp1_data),len(mdp2_data),len(x))
-    # fig = plt.figure()
-    ax1 = fig.add_subplot(221)
-
-    ax1.scatter(alpha, mdp2_data, s=10, c='b', marker="o", label='right Mdp')
-    ax1.scatter(alpha, pos_data, s=10, c='#add8e6', marker="s", label='pos_data Mdp')
-    ax1.scatter(alpha, mdp1_data, s=10, c='r', marker="o", label='left Mdp')
-    ax1.scatter(alpha, neg_data, s=10, c='#f7a6a8', marker="s", label='neg_data Mdp')
-    # ax1.scatter(x, sum, s=10, c='g', marker="o", label='both')
-    plt.legend(loc='upper right')
-
-
-def plot_graph_from_data(expected_return_array, measured_return_array, fig, alpha, title):
-    # print('what is episode_data', episode_data)
-
-    all_data = []
-    for episode in measured_return_array:
-        all_data.append(numpy.mean(episode['pos_reward'] + episode['neg_reward']))  # pos und neg data werden
-        # concatiniert vorm dem durchschnitt
-    fig.suptitle(title, fontsize=16)
-    ax1 = fig.add_subplot(221)
-    ax1.scatter(alpha, expected_return_array, s=10, c='b', marker="o", label='expected return')
-    ax1.scatter(alpha, all_data, s=10, c='#add8e6', marker="s", label='actual return')
-    plt.legend(loc='upper right')
-
-
-def plot_limo_graph(expected_limo, episode_data, fig, alpha):
-    # print('what is episode_data', episode_data)
-
-    all_data = []
-    for episode in episode_data:
-        all_data.append(numpy.mean(episode['pos_reward'] + episode['neg_reward']))
-
-    # x = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.00]
-    # print('size',len(mdp1_data),len(mdp2_data),len(x))
-    # fig = plt.figure()
-    ax1 = fig.add_subplot(221)
-
-    ax1.scatter(alpha, expected_limo, s=10, c='b', marker="o", label='expected return')
-    ax1.scatter(alpha, all_data, s=10, c='#add8e6', marker="s", label='actual return')
-    plt.legend(loc='upper right')
-
-
 def create_definition_set(size):  # creates a discrete interval between 0 and 1 with a 1/size step
     step = 1.0 / size
     counter = 0
@@ -629,15 +526,6 @@ def create_definition_set(size):  # creates a discrete interval between 0 and 1 
         counter = round(counter, 4)
         result_set.append(counter)
     return result_set
-
-
-# def resize_mpds(can1, can2):
-#     length = int(var_size.get()) * 120
-#     can1.__init__(canvas_frame, width=length, height=length, background='white')
-#     can1.grid(row=2, column=0, sticky="w")
-#
-#     can2.__init__(canvas_frame_2, width=length, height=length, background='white')
-#     can2.grid(row=2, column=1, sticky="w")
 
 
 def environment_change_event():
@@ -760,7 +648,6 @@ def print_graph_latex_tikzpicture_CW(mdp):
 
 
 def print_graph_latex_tikzpicture_DST(mdp):
-
     boiler_start = '\\begin{tikzpicture}  \n \\fill[' \
                    'blue](3,0) rectangle (4,1); \n \\fill[blue](0,4) rectangle (1,5); \n' \
                    '\\fill[green](0,3) rectangle (1,4); \n' \
@@ -877,7 +764,7 @@ def print_heatmap_latex_figure_DST(alpha):
 
 def print_full_appendix_comparisons():  # prints all the comparisons in latex-code for the selected environment f
     if config.LATEX_PRINT_MODE == 'single':
-        print_full_latex_comparison(int(var_alpha.get())/100.0)
+        print_full_latex_comparison(int(var_alpha.get()) / 100.0)
     else:
         for x in alpha_definition_set:
             print_full_latex_comparison(x)
@@ -952,10 +839,10 @@ if __name__ == '__main__':
     var_alpha = StringVar(frame, value='0')
     alpha_definition_set = create_definition_set(config.PREFERENCE_SET_SIZE)
 
-    mdp1 = Mdp(var_size.get(), int(var_gamma.get()), [],config.NOISE_FACTOR)
-    mdp2 = Mdp(var_size.get(), int(var_gamma.get()), [],config.NOISE_FACTOR)
-    mdp3 = Mdp(var_size.get(), int(var_gamma.get()), [],config.NOISE_FACTOR)
-    mdp4 = Mdp(var_size.get(), int(var_gamma.get()), [],config.NOISE_FACTOR)
+    mdp1 = Mdp(var_size.get(), int(var_gamma.get()), [], config.NOISE_FACTOR)
+    mdp2 = Mdp(var_size.get(), int(var_gamma.get()), [], config.NOISE_FACTOR)
+    mdp3 = Mdp(var_size.get(), int(var_gamma.get()), [], config.NOISE_FACTOR)
+    mdp4 = Mdp(var_size.get(), int(var_gamma.get()), [], config.NOISE_FACTOR)
 
     env_options = ['cliff-world', 'deep-sea-treasure']
     alg_options = ['LIMO', 'MOMPD']
@@ -1018,24 +905,6 @@ if __name__ == '__main__':
     Button(frame, text="Print Latex Comparison",
            command=lambda: print_full_appendix_comparisons(),
            activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=3, sticky="we")
-    # Button(frame, text="Accu reward",
-    #        command=lambda: accu_reward(c1, c2, mdp1, mdp2, mdp3, mdp4),
-    #        activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=2, sticky="we")
-    # Button(frame, text="run episode",
-    #        command=lambda: episode_runner(c1, c2, mdp3, mdp4),
-    #        activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=3, sticky="we")
-    # Button(frame, text="print",
-    #        command=lambda: print_chart_data(mdp1),
-    #        activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=4, sticky="we")
-    # Button(frame, text="single MO episode",
-    #        command=lambda: run_single_episode(mdp4, 'mo'),
-    #        activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=8, sticky="we")
-    # Button(frame, text="single LIMO episode",
-    #        command=lambda: run_single_episode(mdp3, 'limo'),
-    #        activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=9, sticky="we")
-    # Button(frame, text="draw graph limo",
-    #        command=lambda: graph(mdp3, True, "LIMO"),
-    #        activeforeground="red", activebackground="pink", pady=10).grid(row=5, column=10, sticky="we")
     Button(frame, text="run (single preference)",
            command=lambda: run_single_preference(int(var_alpha.get()) / 100.0, False),
            activeforeground="red", activebackground="pink", pady=10).grid(row=4, column=2, sticky="we")
